@@ -3,7 +3,8 @@
   <img src="Miscalaneous/FinSense 500x500.webp" alt="Q-Trader Logo" width="120" height="120">
 </p>
 
-<h1 align="center">Q-Trader: State-of-the-Art Deep RL Stock Trading Framework</h1>
+<h1 align="center">FinSense: Modular Deep Q-Learning Agent for Financial Markets
+</h1>
 
 <p align="center">
   <b>Unified, Modular, Research-Grade Reinforcement Learning for Financial Markets</b><br>
@@ -37,7 +38,7 @@
 ---
 
 ##  Overview
-Q-Trader is a **state-of-the-art Deep Q-Network (DQN) reinforcement learning framework** for algorithmic stock trading. Designed for both academic research and real-world deployment, it supports **interday and intraday strategies**, multi-backend (Keras/TensorFlow & PyTorch), unified training/evaluation, brokerage simulation, and beautiful dashboarding. The agent learns adaptive, policy-based trading strategies that generalize across assets and market regimes.
+FinSense is a **state-of-the-art Deep Q-Network (DQN) reinforcement learning framework** for algorithmic stock trading. Designed for both academic research and real-world deployment, it supports **interday and intraday strategies**, multi-backend (Keras/TensorFlow & PyTorch), unified training/evaluation, brokerage simulation, and beautiful dashboarding. The agent learns adaptive, policy-based trading strategies that generalize across assets and market regimes.
 
 ---
 
