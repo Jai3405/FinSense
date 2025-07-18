@@ -17,7 +17,7 @@
 
 ---
 
-## 📑 Table of Contents
+##  Table of Contents
 - [Overview](#overview)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
@@ -36,12 +36,12 @@
 
 ---
 
-## 🚀 Overview
+##  Overview
 Q-Trader is a **state-of-the-art Deep Q-Network (DQN) reinforcement learning framework** for algorithmic stock trading. Designed for both academic research and real-world deployment, it supports **interday and intraday strategies**, multi-backend (Keras/TensorFlow & PyTorch), unified training/evaluation, brokerage simulation, and beautiful dashboarding. The agent learns adaptive, policy-based trading strategies that generalize across assets and market regimes.
 
 ---
 
-## ✨ Key Features
+##  Key Features
 - **Unified RL Framework**: Interday (daily) and intraday (minute-level) trading in one codebase
 - **Multi-Backend**: Seamless Keras (TensorFlow) and PyTorch agent support
 - **Modular & Extensible**: Plug-and-play agents, environments, and reward functions
@@ -56,7 +56,7 @@ Q-Trader is a **state-of-the-art Deep Q-Network (DQN) reinforcement learning fra
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```mermaid
 graph TD;
@@ -83,7 +83,7 @@ graph TD;
 
 ---
 
-## 🗂️ Project Structure
+##  Project Structure
 
 | Path/Script                        | Purpose                                                                 |
 |-------------------------------------|-------------------------------------------------------------------------|
@@ -115,7 +115,7 @@ graph TD;
 
 ---
 
-## ⚙️ Installation
+##  Installation
 
 ```bash
 git clone https://github.com/yourusername/q-trader.git
@@ -127,7 +127,7 @@ pip install tensorflow torch numpy matplotlib pandas yfinance streamlit
 
 ---
 
-## 🚦 Quick Start
+##  Quick Start
 
 ### Interday (Daily) Mode
 ```bash
@@ -164,7 +164,7 @@ streamlit run app.py
 
 ---
 
-## 🧠 Advanced Usage
+##  Advanced Usage
 - **Batch Evaluation**: `evaluate_all_inter.py`, `evaluate_all_intra.py`, `evaluate_intra_torch2_all.py`
 - **Portfolio/Trade Limits**: `evaluate_intra_limit.py`
 - **Custom Data**: Place your CSVs in `data/` or use Yahoo tickers
@@ -176,7 +176,7 @@ streamlit run app.py
 
 ---
 
-## 📊 Visualizations & Dashboard
+##  Visualizations & Dashboard
 - **Trading Actions**: Buy/Sell actions on price chart
 - **Portfolio Value**: Agent’s portfolio value over time
 - **Cumulative Profit**: Accumulated profit during trading
@@ -188,7 +188,7 @@ All outputs are saved in `visuals/`.
 
 ---
 
-## 🛠️ Configuration
+##  Configuration
 - **Groww API**: Copy `groww_config_template.json` to `groww_config.json` and fill in credentials
 - **Data**: Place your CSVs in `data/` or use Yahoo tickers
 - **Models**: Saved in `models/` after training
@@ -196,7 +196,7 @@ All outputs are saved in `visuals/`.
 
 ---
 
-## 🧩 Extensibility
+##  Extensibility
 - **Add New Agents**: Implement new RL agents in `agent/`
 - **Custom Environments**: Extend state/reward logic in `functions.py`
 - **Plug-in Data Sources**: Add new data loaders for other APIs
@@ -205,7 +205,7 @@ All outputs are saved in `visuals/`.
 
 ---
 
-## 📚 Research Context
+##  Research Context
 Q-Trader is inspired by the latest research in deep reinforcement learning for finance, including:
 - Policy-based and value-based RL for trading
 - Experience replay, target networks, and ensemble methods
@@ -214,12 +214,12 @@ Q-Trader is inspired by the latest research in deep reinforcement learning for f
 
 ---
 
-## 📖 Citation
+##  Citation
 If you use Q-Trader in your research, please cite:
 ```bibtex
 @misc{qtrader2024,
   title={Q-Trader: Unified Deep RL Framework for Stock Trading},
-  author={Your Name},
+  author={Jayaditya Reddy},{Adip Krishna Guduru}
   year={2024},
   howpublished={\url{https://github.com/yourusername/q-trader}}
 }
@@ -227,17 +227,12 @@ If you use Q-Trader in your research, please cite:
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 Pull requests, issues, and feature suggestions are welcome! Please open an issue to discuss your ideas.
 
 ---
 
-## 📄 License
-MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-## 🙏 Acknowledgments
+##  Acknowledgments
 - Inspired by open-source RL trading research
 - Uses Yahoo Finance, TensorFlow, PyTorch, Streamlit, and more
 - Thanks to the open-source community for foundational libraries
