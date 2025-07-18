@@ -1,6 +1,6 @@
 <!-- PROJECT LOGO -->
 <p align="center">
-  <img src="https://placehold.co/200x200?text=Q-Trader" alt="Q-Trader Logo" width="120" height="120">
+  <img src="/Users/jay/FinSense/Miscalaneous/FinSense 500x500.webp" alt="Q-Trader Logo" width="120" height="120">
 </p>
 
 <h1 align="center">Q-Trader: State-of-the-Art Deep RL Stock Trading Framework</h1>
