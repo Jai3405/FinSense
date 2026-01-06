@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+finsense_env/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# Training artifacts
+*.log
+training*.log
+runs/
+logs/
+models/*.pt
+!models/best_model.pt
+models/*.pth
+models/*.keras
+models/*.h5
+models_old*/
+
+# Data cache
+*.cache
+*.pkl
+*.pickle
+
+# Evaluation results
+evaluation_results/
+
+# TensorBoard
+events.out.tfevents.*
+
+# macOS
+.DS_Store
+*.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Documentation builds (keep source .md files)
+*.docx
+Draft*.docx
+
+# Old/broken code
+*_OLD_BROKEN/
+*_old/
+backup/
+
+# Test outputs
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local configuration
+local_config.yaml
+secrets.yaml
+.env
+.env.local
