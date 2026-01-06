@@ -193,8 +193,17 @@ def train():
 
                 if val_trades >= MIN_VAL_TRADES and val_profit > best_val_profit:
                     best_val_profit = val_profit
-                    checkpoint_manager.save_best_model(agent)
-                    logger.info(f"✅ New best model saved with Val Profit: ₹{val_profit:.2f}, Trades: {val_trades}")
+                    checkpoint_manager.save_checkpoint(
+                        agent,
+                        episode + 1,
+                        {
+                            "val_profit": val_profit,
+                            "val_trades": val_trades
+                        }
+                    )
+                    logger.info(
+                        f"✅ New best model saved | Val Profit: ₹{val_profit:.2f} | Trades: {val_trades}"
+                    )
 
             # Calculate training metrics for logging and periodic checkpoints
             if len(env.trades) > 0:
