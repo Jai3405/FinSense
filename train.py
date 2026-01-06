@@ -191,7 +191,13 @@ def train():
                     checkpoint_manager.save_best_model(agent)
                     logger.info(f"✅ New best model saved with Val Profit: ₹{val_profit:.2f}, Trades: {val_trades}")
 
-            checkpoint_manager.save_checkpoint(agent, episode + 1)
+            # Save periodic checkpoint
+            train_metrics = {
+                "profit": train_profit,
+                "trades": train_info['episode_trades'],
+                "sharpe": train_metrics.get("sharpe_ratio", 0.0),
+            }
+            checkpoint_manager.save_checkpoint(agent, episode + 1, train_metrics)
             agent.decay_epsilon()
 
         logger.info("="*60)
