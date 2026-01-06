@@ -141,8 +141,8 @@ class DataLoader:
             return data
 
         except Exception as e:
-            logger.error(f"Failed to load data from yfinance: {e}")
-            raise ValueError(f"Data loading failed: {e}")
+            logger.error(f"yfinance download failed for ticker '{ticker}'. Original error: {type(e).__name__}: {e}")
+            raise ValueError(f"yfinance download failed for ticker '{ticker}'. See logs for details.")
 
     def _load_from_csv(self, filepath):
         """
