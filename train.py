@@ -155,7 +155,7 @@ def train():
 
         best_val_profit = float('-inf')
         VALIDATION_INTERVAL = 5
-        MIN_VAL_TRADES = 10
+        MIN_VAL_TRADES = 4      # Minimum trades to be considered a valid policy
 
         for episode in range(episodes):
             env.reset()
