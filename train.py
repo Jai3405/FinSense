@@ -145,6 +145,11 @@ def train():
         agent = DQNAgent(state_size, 3, config.get_section('agent'))
         checkpoint_manager = CheckpointManager(args.output, config.get_section('checkpoints'))
 
+        # Create metrics calculator
+        metrics_calc = TradingMetrics(
+            risk_free_rate=config.get('evaluation.risk_free_rate', 0.02)
+        )
+
         episodes = config.get('training.episodes')
         logger.info(f"Starting training for {episodes} episodes...")
 
