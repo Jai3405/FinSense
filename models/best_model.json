@@ -1,0 +1,24 @@
+{
+  "episode": 15,
+  "metrics": {
+    "total_profit": 13776.765631319351,
+    "total_return": 0.27553531262638703,
+    "sharpe_ratio": -0.6111504908491705,
+    "sortino_ratio": -0.6347514361355705,
+    "calmar_ratio": 0.03896369100956547,
+    "max_drawdown": -0.10073911473601917,
+    "max_drawdown_percent": -10.073911473601918,
+    "total_trades": 3824,
+    "win_rate": 0.549163179916318,
+    "loss_rate": 0.450836820083682,
+    "profit_factor": 1.167461133907757,
+    "avg_profit_per_trade": 4.199503703101483,
+    "avg_win": 53.311998256675864,
+    "avg_loss": -55.624300567493755,
+    "expectancy": 4.199503703101488,
+    "volatility": 0.025769581545387645
+  },
+  "is_best": true,
+  "metric_name": "total_profit",
+  "metric_value": 13776.765631319351
+}
