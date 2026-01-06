@@ -191,13 +191,19 @@ def train():
                     checkpoint_manager.save_best_model(agent)
                     logger.info(f"✅ New best model saved with Val Profit: ₹{val_profit:.2f}, Trades: {val_trades}")
 
-            # Save periodic checkpoint
-            train_metrics = {
-                "profit": train_profit,
-                "trades": train_info['episode_trades'],
-                "sharpe": train_metrics.get("sharpe_ratio", 0.0),
-            }
-            checkpoint_manager.save_checkpoint(agent, episode + 1, train_metrics)
+            # Calculate training metrics for logging and periodic checkpoints
+            if len(env.trades) > 0:
+                episode_metrics = metrics_calc.calculate_all_metrics(
+                    env.portfolio_values,
+                    env.trades
+                )
+            else:
+                episode_metrics = {'total_profit': train_profit, 'sharpe_ratio': 0.0}
+
+            # Save periodic checkpoint (will only save if freq matches config)
+            checkpoint_manager.save_checkpoint(agent, episode + 1, episode_metrics)
+            
+            # Decay epsilon
             agent.decay_epsilon()
 
         logger.info("="*60)
