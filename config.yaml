@@ -1,0 +1,167 @@
+# FinSense Configuration File
+# All hyperparameters and settings in one place
+
+# Agent configuration
+agent:
+  # DQN hyperparameters
+  gamma: 0.95  # Discount factor for future rewards
+  epsilon_start: 1.0  # Initial exploration rate
+  epsilon_min: 0.05  # Minimum exploration rate
+  epsilon_decay: 0.9905  # Decay per episode: 0.9905^300 ≈ 0.05 (FIXED: double decay bug removed)
+  learning_rate: 0.0005  # Neural network learning rate (reduced for stability)
+  batch_size: 64  # Training batch size
+  memory_size: 10000  # Replay buffer size (increased for better experience diversity)
+  target_update_frequency: 10  # Update target network every N training steps
+
+  # Network architecture
+  hidden_size: 128  # Hidden layer size
+  dropout: 0.2  # Dropout rate for regularization
+
+# Environment configuration
+environment:
+  window_size: 20  # Number of past days for state representation
+  starting_balance: 50000  # Initial portfolio balance
+  action_size: 3  # Buy (0), Hold (1), Sell (2)
+
+  # Position limits (FIXED: prevents overtrading)
+  max_positions: 5  # Maximum open positions at once
+  max_position_value: 0.3  # Maximum 30% of balance per position
+
+  # Idle penalty (FIXED: prevents dead policy where agent never trades)
+  idle_penalty_coefficient: 0.0003  # Penalty for HOLD when flat (0.0003 = 0.03% of ATR)
+
+  # Feature engineering
+  use_volume: true  # Include volume in state
+  use_technical_indicators: true  # Include RSI, MACD, etc.
+  indicators:
+    - rsi
+    - macd
+    - bollinger_bands
+    - atr
+
+# Training configuration
+training:
+  episodes: 300  # Number of training episodes (increased from 100 for proper learning)
+  save_frequency: 10  # Save model every N episodes
+  save_best_only: true  # Only save model when performance improves
+  validation_split: 0.2  # Percentage of data for validation
+  train_ratio: 0.7  # 70% training
+  validation_ratio: 0.15  # 15% validation, 15% test
+
+  # Logging
+  log_frequency: 1  # Log metrics every N episodes
+  tensorboard: true  # Enable TensorBoard logging
+  verbose: true  # Print training progress
+
+# Evaluation configuration
+evaluation:
+  initial_balance: 50000
+  transaction_cost: 0.001  # 0.1% per trade
+
+  # Broker charges (Zerodha)
+  brokerage_per_trade: 20  # ₹20 or 0.03% whichever is lower
+  brokerage_percentage: 0.0003  # 0.03%
+  stt: 0.00025  # Securities Transaction Tax (sell only)
+  exchange_charges: 0.0000297  # NSE charges
+  sebi_charges: 0.000001  # SEBI turnover fee
+  stamp_duty: 0.00003  # Stamp duty (buy only)
+  gst: 0.18  # 18% GST on brokerage + charges
+
+  # Metrics to track
+  metrics:
+    - total_profit
+    - sharpe_ratio
+    - max_drawdown
+    - win_rate
+    - sortino_ratio
+    - calmar_ratio
+    - total_trades
+    - avg_profit_per_trade
+
+# Data configuration
+data:
+  source: yfinance  # Data provider (yfinance, groww, csv)
+  ticker: RELIANCE.NS  # Default stock ticker (or list: [RELIANCE.NS, TCS.NS, INFY.NS])
+  interval: 1d  # Data interval (1d, 5m, 15m, 1h)
+  start_date: 2020-01-01  # Historical data start date
+  end_date: null  # End date (null = today)
+
+  # Multi-stock training
+  multi_stock: true  # Train on multiple stocks (ENABLED for better generalization)
+  stock_list:  # List of stocks for multi-stock training
+    - RELIANCE.NS
+    - TCS.NS
+    - INFY.NS
+    - HDFCBANK.NS
+    - ICICIBANK.NS
+
+  # Market context
+  use_market_index: true  # Include market index data (ENABLED for market context)
+  market_index: NIFTY50  # Market index (NIFTY50, BANKNIFTY, SENSEX)
+
+  # Data augmentation
+  augment_data: true  # Create augmented versions for training (ENABLED for robustness)
+  augmentation_noise: 0.01  # Noise level (1% - realistic market noise)
+  augmentation_copies: 2  # Number of augmented copies (good balance: diversity vs speed)
+
+  # Data preprocessing
+  normalize: true  # Normalize features
+  fill_missing: forward  # Forward fill missing values
+  remove_outliers: false  # Remove outliers
+  validate_data: true  # Run data quality checks
+
+# Model checkpointing
+checkpoints:
+  directory: models/  # Directory to save models
+  save_best: true  # Save best performing model
+  save_frequency: 10  # Save every N episodes
+  max_keep: 5  # Maximum number of checkpoints to keep
+
+# Logging configuration
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR
+  file: logs/finsense.log  # Log file path
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  tensorboard_dir: runs/  # TensorBoard log directory
+
+# Reward function configuration
+reward:
+  type: profit_with_risk  # profit_only, profit_with_risk, sharpe_based
+  risk_penalty_factor: 0.1  # Penalty for high risk
+  holding_penalty: 0.001  # Small penalty for holding losing positions
+  transaction_cost_aware: true  # Include transaction costs in reward
+
+  # Risk-adjusted reward parameters
+  max_drawdown_penalty: 0.5  # Penalty weight for drawdown
+  volatility_penalty: 0.2  # Penalty for high volatility
+  sharpe_weight: 0.3  # Weight for Sharpe ratio in reward
+
+# Backtesting configuration
+backtest:
+  walk_forward: true  # Enable walk-forward validation
+  train_period: 6  # Months of training data
+  test_period: 1  # Months of test data
+  step_size: 1  # Step forward by N months
+
+# Live trading configuration
+live_trading:
+  enabled: false  # Enable live trading
+  paper_trade: true  # Paper trading mode (no real orders)
+
+  # Data streaming
+  interval: 5m  # Trading interval (1m, 5m, 15m)
+  buffer_size: 500  # Historical buffer for context
+  update_timeout: 300  # Max seconds to wait for update
+
+  # Position sizing
+  max_position_size: 0.1  # Maximum 10% of portfolio per position
+  max_portfolio_risk: 0.02  # Maximum 2% portfolio risk per trade
+  min_cash_reserve: 0.2  # Keep 20% in cash
+
+  # Safety limits
+  daily_loss_limit: 1000  # Stop trading if daily loss exceeds
+  max_trades_per_day: 10  # Maximum trades per day
+
+  # Market hours (IST)
+  market_open: '09:15'
+  market_close: '15:30'
