@@ -316,6 +316,28 @@ class TradingEnvironment:
             'episode_trades': self.episode_trades
         }
 
+    def get_action_mask(self):
+        """
+        Returns a boolean mask of valid actions.
+        Action order: [BUY, HOLD, SELL]
+        True  = action allowed
+        False = action forbidden
+        """
+        mask = [True, True, True]
+
+        current_price = self.data['close'][self.current_step]
+
+        # Cannot SELL if no inventory
+        if len(self.inventory) == 0:
+            mask[2] = False
+
+        # Cannot BUY if insufficient balance or at max positions
+        if self.balance < current_price or len(self.inventory) >= self.max_positions:
+            mask[0] = False
+
+        return mask
+
+
     def is_done(self):
         """Check if episode is finished."""
         return self.current_step >= len(self.data['close']) - 1

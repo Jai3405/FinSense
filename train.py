@@ -164,7 +164,8 @@ def train():
             
             for t in range(window_size, len(train_data['close'])):
                 state = get_state_with_features(train_data, t, window_size, config.get_section('environment'))
-                action = agent.act(state, training=True)
+                action_mask = env.get_action_mask()
+                action = agent.act(state, training=True, action_mask=action_mask)
                 reward, done, _ = env.step(action)
                 next_state = get_state_with_features(train_data, env.current_step, window_size, config.get_section('environment')) if not done else state
                 agent.remember(state, action, reward, next_state, done)

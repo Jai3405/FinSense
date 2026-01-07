@@ -23,22 +23,38 @@ logger = logging.getLogger(__name__)
 
 
 class DQNNetwork(nn.Module):
-    """Deep Q-Network architecture."""
+    """Dueling Deep Q-Network architecture."""
 
-    def __init__(self, state_size, action_size, hidden_size=64, dropout=0.2):
+    def __init__(self, state_size, action_size, hidden_size=64, dropout=0.2): # dropout is unused but kept for API consistency
         super(DQNNetwork, self).__init__()
+
+        # Shared layers
         self.fc1 = nn.Linear(state_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.fc3 = nn.Linear(hidden_size, action_size)
-        self.dropout = nn.Dropout(dropout)
+
+        # Value stream
+        self.value_stream = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, 1)
+        )
+
+        # Advantage stream
+        self.advantage_stream = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, action_size)
+        )
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = F.relu(self.fc2(x))
-        x = self.dropout(x)
-        x = self.fc3(x)
-        return x
+
+        value = self.value_stream(x)
+        advantage = self.advantage_stream(x)
+
+        # Combine value and advantage streams
+        # Q(s, a) = V(s) + (A(s, a) - mean(A(s, a)))
+        q_values = value + (advantage - advantage.mean(dim=1, keepdim=True))
+        return q_values
 
 
 class DQNAgent(BaseAgent):
@@ -93,27 +109,38 @@ class DQNAgent(BaseAgent):
         logger.info(f"Initialized DQN Agent with state_size={state_size}, "
                    f"action_size={action_size}")
 
-    def act(self, state, training=True):
+    def act(self, state, training=True, action_mask=None):
         """
-        Select action using epsilon-greedy policy.
+        Select action using epsilon-greedy policy, with action masking.
 
         Args:
             state (np.ndarray): Current state
             training (bool): If True, uses epsilon-greedy; if False, uses greedy
+            action_mask (list, optional): Boolean mask of valid actions.
 
         Returns:
             int: Selected action index
         """
         # Epsilon-greedy exploration during training
         if training and np.random.random() <= self.epsilon:
+            if action_mask is not None:
+                valid_actions = [i for i, valid in enumerate(action_mask) if valid]
+                return random.choice(valid_actions) if valid_actions else 1 # Default to Hold
             return random.randrange(self.action_size)
 
         # Greedy action selection
-        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         with torch.no_grad():
+            state_tensor = torch.FloatTensor(state).to(self.device)
             q_values = self.q_network(state_tensor)
 
-        return torch.argmax(q_values).item()
+        if action_mask is not None:
+            masked_q = q_values.clone()
+            for i, valid in enumerate(action_mask):
+                if not valid:
+                    masked_q[0, i] = -float('inf')
+            return int(torch.argmax(masked_q).item())
+
+        return int(torch.argmax(q_values).item())
 
     def remember(self, state, action, reward, next_state, done):
         """

@@ -32,6 +32,9 @@ agent.epsilon = 0.0
 
 window_size = env_config.get("window_size", 20)
 
+# Create an environment to get action masks
+test_env = TradingEnvironment(test_data, env_config)
+
 # Sample 10 random points from test set
 test_indices = np.random.choice(range(window_size, len(test_data['close'])), 10, replace=False)
 
@@ -41,21 +44,32 @@ print("="*70)
 q_values_all = {'buy': [], 'hold': [], 'sell': []}
 
 for i, t in enumerate(test_indices):
+    # Set the environment to the correct step to get the right mask
+    test_env.current_step = t
+    action_mask = test_env.get_action_mask()
+    
     state = get_state_with_features(test_data, t, window_size, env_config)
 
     with torch.no_grad():
-        state_tensor = torch.FloatTensor(state).unsqueeze(0)
+        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(agent.device)
         q_vals = agent.q_network(state_tensor).squeeze().cpu().numpy()
 
     q_values_all['buy'].append(q_vals[0])
     q_values_all['hold'].append(q_vals[1])
     q_values_all['sell'].append(q_vals[2])
 
+    # Apply mask for determining the chosen action
+    masked_q_vals = np.copy(q_vals)
+    for i, valid in enumerate(action_mask):
+        if not valid:
+            masked_q_vals[i] = -np.inf
+    chosen_action_idx = np.argmax(masked_q_vals)
+
     print(f"\nPoint {i+1} (t={t}):")
-    print(f"  Q(Buy):  {q_vals[0]:8.4f}")
-    print(f"  Q(Hold): {q_vals[1]:8.4f} {'← HIGHEST' if np.argmax(q_vals) == 1 else ''}")
-    print(f"  Q(Sell): {q_vals[2]:8.4f}")
-    print(f"  Action: {['Buy', 'Hold', 'Sell'][np.argmax(q_vals)]}")
+    print(f"  Q(Buy):  {q_vals[0]:8.4f} {'(Invalid)' if not action_mask[0] else ''}")
+    print(f"  Q(Hold): {q_vals[1]:8.4f} {'(Invalid)' if not action_mask[1] else ''}")
+    print(f"  Q(Sell): {q_vals[2]:8.4f} {'(Invalid)' if not action_mask[2] else ''}")
+    print(f"  Action: {['Buy', 'Hold', 'Sell'][chosen_action_idx]}")
 
 print("\n" + "="*70)
 print("AVERAGE Q-VALUES ACROSS TEST SET:")
