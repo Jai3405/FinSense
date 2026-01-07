@@ -96,7 +96,7 @@ class TradingEnvironment:
 
     def step(self, action):
         """
-        Execute trading action with EQUITY DELTA reward (expert recommendation).
+        Execute trading action with a robust penalty for failed attempts.
 
         Args:
             action (int): 0=Buy, 1=Hold, 2=Sell
@@ -105,41 +105,41 @@ class TradingEnvironment:
             tuple: (reward, done, info)
         """
         done = False
-        info = {}
+        
+        # --- Store state BEFORE action to detect failed trades ---
+        prev_balance = self.balance
+        prev_inventory_size = len(self.inventory)
+        # ---------------------------------------------------------
 
         current_price = self.data['close'][self.current_step]
-
-        # Get portfolio value BEFORE action
         prev_portfolio_value = self._calculate_portfolio_value(current_price)
 
-        # Execute action (updates balance, inventory, trades)
-        action_reward, info = self._execute_action(action, current_price)
+        # Execute action
+        _, info = self._execute_action(action, current_price)
 
-        # Get portfolio value AFTER action
         new_portfolio_value = self._calculate_portfolio_value(current_price)
 
-        # EXPERT RECOMMENDATION: Reward = equity delta
-        # This naturally rewards holding winners and penalizes churn
+        # 1. Base reward is equity delta
         equity_delta = new_portfolio_value - prev_portfolio_value
+        reward = equity_delta
 
-        # EXPERT RECOMMENDATION: Action change penalty (prevents churn)
-        action_change_penalty = 0.0
+        # 2. Penalize changing action to discourage churn
         if action != self.prev_action:
-            # Penalty scaled by ATR (volatility-aware)
             atr_value = self.data.get('atr', [1.0] * len(self.data['close']))[self.current_step]
-            action_change_penalty = 0.001 * atr_value
+            reward -= 0.001 * atr_value
 
-        # CRITICAL FIX: Idle penalty when flat (prevents dead policy)
-        # When agent has no positions and chooses HOLD, apply small opportunity cost
-        # This prevents HOLD from becoming the global optimum
-        idle_penalty = 0.0
-        if len(self.inventory) == 0 and action == 1:  # HOLD with no positions
+        # 3. Penalize holding with no positions (opportunity cost)
+        if len(self.inventory) == 0 and action == 1:
             atr_value = self.data.get('atr', [1.0] * len(self.data['close']))[self.current_step]
-            idle_coeff = self.config.get('idle_penalty_coefficient', 0.0003)
-            idle_penalty = idle_coeff * atr_value  # Small penalty for inaction
+            idle_coeff = self.config.get('idle_penalty_coefficient', 0.001)
+            reward -= idle_coeff * atr_value
 
-        # Final reward = equity delta - action change penalty - idle penalty
-        reward = equity_delta - action_change_penalty - idle_penalty
+        # 4. --- Penalize INVALID trade attempts (the robust fix) ---
+        if action in [0, 2]:  # If a BUY or SELL was attempted
+            if self.balance == prev_balance and len(self.inventory) == prev_inventory_size:
+                # If nothing changed, the trade failed. Apply a small penalty.
+                reward -= 0.001
+        # -------------------------------------------------------------
 
         # Update tracking
         self.prev_action = action
