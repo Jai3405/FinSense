@@ -4,6 +4,7 @@ Encapsulates trading logic and state management.
 """
 
 import numpy as np
+import pandas as pd
 import logging
 from typing import Tuple, Dict, Optional
 
@@ -122,6 +123,23 @@ class TradingEnvironment:
         # 1. Base reward is equity delta
         equity_delta = new_portfolio_value - prev_portfolio_value
         reward = equity_delta
+
+        # --- Action–Trend Alignment Reward (Phase 2 EDGE) ---
+        # Recompute EMA diff sign locally (cheap + robust)
+        if self.current_step > 26:
+            closes = np.array(self.data['close'][self.current_step-26:self.current_step])
+            ema_fast = pd.Series(closes).ewm(span=12, adjust=False).mean().iloc[-1]
+            ema_slow = pd.Series(closes).ewm(span=26, adjust=False).mean().iloc[-1]
+            ema_diff = ema_fast - ema_slow
+
+            # Small asymmetric bonus for acting with the trend
+            trend_align_coeff = 0.01
+            if ema_diff > 0 and action == 0:      # BUY in uptrend
+                reward += trend_align_coeff
+            elif ema_diff < 0 and action == 2:    # SELL in downtrend
+                reward += trend_align_coeff
+        # --------------------------------------------------
+
 
         # 2. Penalize changing action to discourage churn
         if action != self.prev_action:
