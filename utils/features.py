@@ -253,7 +253,37 @@ def get_state_with_features(data, t, window_size, config=None):
             else:
                 features.append(0.5)
 
-    return np.array([features])
+    # --- Trend Features (EDGE INJECTION) ---
+    full_close = pd.Series(data['close'][:t])
+    
+    if len(full_close) > 26:  # Ensure enough data for slow EMA
+        ema_fast = full_close.ewm(span=12, adjust=False).mean()
+        ema_slow = full_close.ewm(span=26, adjust=False).mean()
+        
+        # 1. EMA Difference (normalized by price)
+        ema_diff = (ema_fast.iloc[-1] - ema_slow.iloc[-1]) / (full_close.iloc[-1] + 1e-8)
+        
+        # 2. EMA Slope (normalized by price)
+        ema_slope = ema_fast.diff().iloc[-1] / (full_close.iloc[-1] + 1e-8) if len(ema_fast) > 1 else 0.0
+        
+        # 3. Trend Strength (ADX-lite)
+        # This requires high/low data, so we get it from the main `data` dict
+        full_high = pd.Series(data['high'][:t])
+        full_low = pd.Series(data['low'][:t])
+        true_range = np.maximum(full_high - full_low, np.maximum(abs(full_high - full_close.shift(1)), abs(full_low - full_close.shift(1))))
+        atr = true_range.rolling(14).mean().iloc[-1]
+        trend_strength = abs(full_close.diff()).rolling(14).mean().iloc[-1] / (atr + 1e-8)
+        
+        features.extend([ema_diff, ema_slope, trend_strength])
+    else:
+        # Not enough data for trend indicators, append neutral values
+        features.extend([0.0, 0.0, 0.5]) # Use 0.5 for trend_strength as it's sigmoid-like
+
+    state_array = np.array([features])
+    # NaN safety (mandatory)
+    state_array = np.nan_to_num(state_array, nan=0.0, posinf=0.0, neginf=0.0)
+
+    return state_array
 
 
 def get_state(data, t, n):
