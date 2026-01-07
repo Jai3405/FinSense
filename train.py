@@ -139,7 +139,8 @@ def train():
         window_size = config.get('environment.window_size')
         state_size = window_size - 1
         if config.get('environment.use_volume', True): state_size += 1
-        if config.get('environment.use_technical_indicators', True): state_size += 6
+        if use_indicators:
+            state_size += 9  # RSI(1) + MACD(3) + BB(1) + ATR(1) + Trend(3)
         logger.info(f"State size: {state_size} features")
 
         agent = DQNAgent(state_size, 3, config.get_section('agent'))
