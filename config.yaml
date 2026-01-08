@@ -28,7 +28,7 @@ environment:
   max_position_value: 0.3  # Maximum 30% of balance per position
 
   # Idle penalty (FIXED: prevents dead policy where agent never trades)
-  idle_penalty_coefficient: 0.0003  # Penalty for HOLD when flat (0.0003 = 0.03% of ATR)
+  idle_penalty_coefficient: 0.001  # Penalty for HOLD when flat (increased from 0.0005 - v3 diagnostic)
 
   # Feature engineering
   use_volume: true  # Include volume in state
@@ -165,3 +165,16 @@ live_trading:
   # Market hours (IST)
   market_open: '09:15'
   market_close: '15:30'
+
+
+# PPO specific hyperparameters
+ppo:
+  lr: 0.0003
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_eps: 0.2
+  value_coef: 0.5
+  entropy_coef: 0.01
+  epochs: 4          # Number of epochs to train on each rollout
+  batch_size: 64     # Minibatch size for PPO updates
+
