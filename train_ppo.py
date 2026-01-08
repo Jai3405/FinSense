@@ -96,7 +96,10 @@ def train_ppo():
 
         logger.info(f"Episode {episode+1} | Total Reward: {episode_reward:.2f}")
 
-    logger.info("PPO Training Complete!")
+    # --- Save the final trained model ---
+    save_path = "models/ppo_final.pt"
+    torch.save(agent.state_dict(), save_path)
+    logger.info(f"PPO Training Complete! Final model saved to {save_path}")
 
 if __name__ == '__main__':
     train_ppo()
