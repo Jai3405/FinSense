@@ -41,7 +41,7 @@ environment:
 
 # Training configuration
 training:
-  episodes: 300  # Number of training episodes (increased from 100 for proper learning)
+  episodes: 300  # Number of training episodes (increased for PPO tuning)
   save_frequency: 10  # Save model every N episodes
   save_best_only: true  # Only save model when performance improves
   validation_split: 0.2  # Percentage of data for validation
