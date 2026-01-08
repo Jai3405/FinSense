@@ -124,6 +124,12 @@ class TradingEnvironment:
         equity_delta = new_portfolio_value - prev_portfolio_value
         reward = equity_delta
 
+        # --- Reward Surface Shaping (Phase 2) ---
+        if info.get('action') == 'sell' and info.get('success', True):
+            realized_pnl_coeff = 1.2
+            reward *= realized_pnl_coeff
+        # -----------------------------------------
+
         # --- Action–Trend Alignment Reward (Phase 2 EDGE) ---
         # Recompute EMA diff sign locally (cheap + robust)
         if self.current_step > 26:
