@@ -130,6 +130,17 @@ class TradingEnvironment:
             reward *= realized_pnl_coeff
         # -----------------------------------------
 
+        # --- Holding Reward: Let Winners Run ---
+        if len(self.inventory) > 0:
+            current_price = self.data['close'][self.current_step]
+            # Use the average of the inventory as the cost basis
+            cost_basis = sum(self.inventory) / len(self.inventory)
+            unrealized_pnl = current_price - cost_basis
+            if unrealized_pnl > 0:
+                holding_reward_coeff = 0.01  # Small bonus for holding winners
+                reward += holding_reward_coeff * unrealized_pnl
+        # -------------------------------------
+
         # --- Action–Trend Alignment Reward (Phase 2 EDGE) ---
         # Recompute EMA diff sign locally (cheap + robust)
         if self.current_step > 26:
