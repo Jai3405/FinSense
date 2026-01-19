@@ -2,6 +2,7 @@
 # Main training loop for the PPO agent.
 
 import torch
+import argparse
 from agents.ppo_agent import PPOAgent
 from agents.ppo_memory import PPOMemory
 from agents.ppo_trainer import PPOTrainer
@@ -10,7 +11,7 @@ from utils import load_config, setup_logger
 from data_loader import DataLoader
 import numpy as np
 
-def train_ppo():
+def train_ppo(episodes=None, verbose=False):
     """Main PPO training loop."""
     config = load_config('config.yaml')
     logger = setup_logger('ppo_train', 'logs/ppo_training.log')
@@ -29,20 +30,19 @@ def train_ppo():
     train_data, val_data, _ = data_loader.train_test_split(data)
 
     env = TradingEnvironment(train_data, env_config)
-    
-    # Get state size dynamically
-    sample_state = env.reset()
-    # This is not right, reset() returns an int. We need to get a real state.
-    # Let's get it manually for now.
-    sample_state = env.get_state() 
-    # The state from get_state is a dict. The input to the network is the feature vector.
-    # We need to call get_state_with_features
+
+    # Calculate state size dynamically (must match DQN configuration)
     from utils.features import get_state_with_features
     window_size = env_config.get('window_size', 20)
-    sample_feature_state = get_state_with_features(train_data, window_size, window_size, env_config)
-    state_size = sample_feature_state.shape[1]
-    
+    state_size = window_size - 1  # Price diffs
+    if config.get('environment.use_volume', True):
+        state_size += 1
+    if config.get('environment.use_technical_indicators', True):
+        state_size += 9  # RSI(1) + MACD(3) + BB(1) + ATR(1) + Trend(3)
+
     action_size = env_config.get('action_size', 3)
+
+    logger.info(f"State size: {state_size} features")
     
     # Agent and Trainer
     agent = PPOAgent(state_size, action_size).to(device)
@@ -52,9 +52,12 @@ def train_ppo():
     # Memory
     memory = PPOMemory(batch_size=ppo_config.get('batch_size', 64), device=device)
 
-    logger.info("Starting PPO Training...")
+    # Override episodes if provided
+    num_episodes = episodes if episodes is not None else config.get('training.episodes', 100)
 
-    for episode in range(config.get('training.episodes', 100)):
+    logger.info(f"Starting PPO Training for {num_episodes} episodes...")
+
+    for episode in range(num_episodes):
         env.reset()
         state = get_state_with_features(train_data, env.current_step, window_size, env_config)
         
@@ -94,7 +97,15 @@ def train_ppo():
         trainer.update(memory, advantages, returns)
         memory.clear()
 
-        logger.info(f"Episode {episode+1} | Total Reward: {episode_reward:.2f}")
+        env_state = env.get_state()
+        final_value = env_state['portfolio_value']
+        profit = final_value - env.initial_balance
+        trades = env_state['episode_trades']
+
+        msg = f"Episode {episode+1}/{num_episodes} | Profit: ₹{profit:.2f} | Trades: {trades} | Reward: {episode_reward:.2f}"
+        logger.info(msg)
+        if verbose:
+            print(msg)
 
     # --- Save the final trained model ---
     save_path = "models/ppo_final.pt"
@@ -102,4 +113,9 @@ def train_ppo():
     logger.info(f"PPO Training Complete! Final model saved to {save_path}")
 
 if __name__ == '__main__':
-    train_ppo()
+    parser = argparse.ArgumentParser(description='Train PPO Agent')
+    parser.add_argument('--episodes', type=int, default=None, help='Number of training episodes')
+    parser.add_argument('--verbose', action='store_true', help='Print progress to console')
+    args = parser.parse_args()
+
+    train_ppo(episodes=args.episodes, verbose=args.verbose)
