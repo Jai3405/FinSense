@@ -88,6 +88,10 @@ Draft*.docx
 *_OLD_BROKEN/
 *_old/
 backup/
+archive/
+saves/
+models_old*/
+models.zip
 
 # Test outputs
 .pytest_cache/

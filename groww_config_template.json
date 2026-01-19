@@ -1,7 +1,0 @@
-{
-  "api_key": "YOUR_API_KEY_HERE",
-  "api_secret": "YOUR_API_SECRET_HERE",
-  "access_token": "YOUR_ACCESS_TOKEN_HERE",
-  "auth_method": "access_token",
-  "note": "Choose 'access_token' or 'totp' for auth_method. If using TOTP, set api_key and api_secret. If using access_token, set access_token field."
-}
