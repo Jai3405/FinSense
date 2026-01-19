@@ -23,9 +23,9 @@ environment:
   starting_balance: 50000  # Initial portfolio balance
   action_size: 3  # Buy (0), Hold (1), Sell (2)
 
-  # Position limits (FIXED: prevents overtrading)
-  max_positions: 5  # Maximum open positions at once
-  max_position_value: 0.3  # Maximum 30% of balance per position
+  # Position limits (OPTIMIZED: calculated from actual stock prices)
+  max_positions: 40  # Maximum shares to hold (94-95% capital usage at median prices)
+  max_position_value: 0.95  # Maximum 95% of balance can be invested (5% cash buffer)
 
   # Idle penalty (FIXED: prevents dead policy where agent never trades)
   # NOTE: With percentage-based rewards, this is now in percentage terms (not ATR-scaled rupees)
@@ -42,7 +42,7 @@ environment:
 
 # Training configuration
 training:
-  episodes: 300  # Number of training episodes (increased for PPO tuning)
+  episodes: 100  # CONTINUATION: 100 more episodes to push Sharpe from 0.123 to 0.25-0.35
   save_frequency: 10  # Save model every N episodes
   save_best_only: true  # Only save model when performance improves
   validation_split: 0.2  # Percentage of data for validation
@@ -82,20 +82,14 @@ evaluation:
 # Data configuration
 data:
   source: yfinance  # Data provider (yfinance, groww, csv)
-  # ticker will be overridden by stock_list when multi_stock=true
-  ticker:  # Use stock_list below for multi-stock training
-    - RELIANCE.NS
-    - TCS.NS
-    - INFY.NS
-    - HDFCBANK.NS
-    - ICICIBANK.NS
+  ticker: RELIANCE.NS  # SINGLE-STOCK: Isolate problem before scaling to multi-stock
   interval: 1d  # Data interval (1d, 5m, 15m, 1h)
   start_date: 2020-01-01  # Historical data start date
   end_date: null  # End date (null = today)
 
-  # Multi-stock training
-  multi_stock: true  # Train on multiple stocks (ENABLED for better generalization)
-  stock_list:  # List of stocks for multi-stock training
+  # Multi-stock training (DISABLED for diagnosis)
+  multi_stock: false  # Train on single stock first to isolate PPO learning issues
+  stock_list:  # List of stocks for multi-stock training (FUTURE)
     - RELIANCE.NS
     - TCS.NS
     - INFY.NS
@@ -174,14 +168,14 @@ live_trading:
   market_close: '15:30'
 
 
-# PPO specific hyperparameters
+# PPO specific hyperparameters (OPTIMIZED for faster convergence)
 ppo:
-  lr: 0.0003
+  lr: 0.001          # Increased from 0.0003 (3× faster learning)
   gamma: 0.99
   gae_lambda: 0.95
   clip_eps: 0.2
   value_coef: 0.5
-  entropy_coef: 0.01
+  entropy_coef: 0.05 # Increased from 0.01 (5× more exploration)
   epochs: 4          # Number of epochs to train on each rollout
-  batch_size: 64     # Minibatch size for PPO updates
+  batch_size: 128    # Increased from 64 (more stable gradients)
 
