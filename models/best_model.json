@@ -1,24 +1,24 @@
 {
-  "episode": 31,
+  "episode": 35,
   "metrics": {
-    "total_profit": 14378.783157038284,
-    "total_return": 0.28757566314076566,
-    "sharpe_ratio": -0.5932015430392843,
-    "sortino_ratio": -0.5812458169134578,
-    "calmar_ratio": 0.0339165782504623,
-    "max_drawdown": -0.12020693352662466,
-    "max_drawdown_percent": -12.020693352662466,
-    "total_trades": 3312,
-    "win_rate": 0.5597826086956522,
-    "loss_rate": 0.4402173913043478,
-    "profit_factor": 1.1838265835629025,
-    "avg_profit_per_trade": 4.946819761358517,
-    "avg_win": 56.909721141174586,
-    "avg_loss": -61.12946224013599,
-    "expectancy": 4.9468197613585225,
-    "volatility": 0.0262684363175238
+    "total_profit": 3944.9796381836713,
+    "total_return": 0.07889959276367342,
+    "sharpe_ratio": -0.054160084990624364,
+    "sortino_ratio": -0.07573121689379818,
+    "calmar_ratio": 0.730379054441242,
+    "max_drawdown": -0.025777533482539167,
+    "max_drawdown_percent": -2.5777533482539168,
+    "total_trades": 282,
+    "win_rate": 0.5602836879432624,
+    "loss_rate": 0.43971631205673756,
+    "profit_factor": 1.7736842415824179,
+    "avg_profit_per_trade": 14.428559780376027,
+    "avg_win": 59.03744592854208,
+    "avg_loss": -42.41179515035169,
+    "expectancy": 14.428559780376027,
+    "volatility": 0.02085606673505401
   },
   "is_best": true,
   "metric_name": "total_profit",
-  "metric_value": 14378.783157038284
+  "metric_value": 3944.9796381836713
 }
