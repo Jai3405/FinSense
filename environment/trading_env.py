@@ -120,61 +120,30 @@ class TradingEnvironment:
 
         new_portfolio_value = self._calculate_portfolio_value(current_price)
 
-        # 1. Base reward is equity delta
-        equity_delta = new_portfolio_value - prev_portfolio_value
-        reward = equity_delta
+        # === PRODUCTION FIX: PERCENTAGE-BASED REWARD ===
+        # Convert equity change to percentage return (in percent, not decimal)
+        # This fixes reward scale mismatch (transaction costs were 21,000× larger than penalties)
+        if prev_portfolio_value > 0:
+            portfolio_return_pct = ((new_portfolio_value / prev_portfolio_value) - 1) * 100
+        else:
+            portfolio_return_pct = 0.0
 
-        # --- Reward Surface Shaping (Phase 2) ---
-        if info.get('action') == 'sell' and info.get('success', True):
-            realized_pnl_coeff = 1.2
-            reward *= realized_pnl_coeff
-        # -----------------------------------------
+        reward = portfolio_return_pct
+        # ===============================================
 
-        # --- Holding Reward: Let Winners Run ---
-        if len(self.inventory) > 0:
-            current_price = self.data['close'][self.current_step]
-            # Use the average of the inventory as the cost basis
-            cost_basis = sum(self.inventory) / len(self.inventory)
-            unrealized_pnl = current_price - cost_basis
-            if unrealized_pnl > 0:
-                holding_reward_coeff = 0.01  # Small bonus for holding winners
-                reward += holding_reward_coeff * unrealized_pnl
-        # -------------------------------------
-
-        # --- Action–Trend Alignment Reward (Phase 2 EDGE) ---
-        # Recompute EMA diff sign locally (cheap + robust)
-        if self.current_step > 26:
-            closes = np.array(self.data['close'][self.current_step-26:self.current_step])
-            ema_fast = pd.Series(closes).ewm(span=12, adjust=False).mean().iloc[-1]
-            ema_slow = pd.Series(closes).ewm(span=26, adjust=False).mean().iloc[-1]
-            ema_diff = ema_fast - ema_slow
-
-            # Small asymmetric bonus for acting with the trend
-            trend_align_coeff = 0.01
-            if ema_diff > 0 and action == 0:      # BUY in uptrend
-                reward += trend_align_coeff
-            elif ema_diff < 0 and action == 2:    # SELL in downtrend
-                reward += trend_align_coeff
-        # --------------------------------------------------
-
-
-        # 2. Penalize changing action to discourage churn
+        # Penalize action changes (reduce churn) - now in percentage terms
         if action != self.prev_action:
-            atr_value = self.data.get('atr', [1.0] * len(self.data['close']))[self.current_step]
-            reward -= 0.001 * atr_value
+            reward -= 0.01  # 0.01% penalty (1 basis point)
 
-        # 3. Penalize holding with no positions (opportunity cost)
+        # Penalize idle holding (opportunity cost) - now in percentage terms
         if len(self.inventory) == 0 and action == 1:
-            atr_value = self.data.get('atr', [1.0] * len(self.data['close']))[self.current_step]
-            idle_coeff = self.config.get('idle_penalty_coefficient', 0.001)
-            reward -= idle_coeff * atr_value
+            idle_penalty_pct = self.config.get('idle_penalty_coefficient', 0.02)  # Default 0.02%
+            reward -= idle_penalty_pct
 
-        # 4. --- Penalize INVALID trade attempts (the robust fix) ---
+        # Penalize invalid trade attempts - now in percentage terms
         if action in [0, 2]:  # If a BUY or SELL was attempted
             if self.balance == prev_balance and len(self.inventory) == prev_inventory_size:
-                # If nothing changed, the trade failed. Apply a small penalty.
-                reward -= 0.001
-        # -------------------------------------------------------------
+                reward -= 0.01  # 0.01% penalty
 
         # Update tracking
         self.prev_action = action
