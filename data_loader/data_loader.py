@@ -267,7 +267,10 @@ class DataLoader:
 
     def train_test_split(self, data, train_ratio=0.8, validation_ratio=0.1):
         """
-        Split data into train/validation/test sets (temporal split).
+        Split data into train/validation/test sets.
+
+        For multi-stock data: Splits each stock individually, then concatenates.
+        For single-stock data: Standard temporal split.
 
         Args:
             data (dict): Full dataset
@@ -277,6 +280,19 @@ class DataLoader:
         Returns:
             tuple: (train_data, val_data, test_data)
         """
+        # Check if this is multi-stock data (config has ticker as list)
+        ticker = self.config.get('ticker')
+        is_multi_stock = isinstance(ticker, list) and len(ticker) > 1
+
+        if is_multi_stock:
+            # Multi-stock: Split each stock separately, then concatenate
+            return self._multi_stock_split(data, ticker, train_ratio, validation_ratio)
+        else:
+            # Single stock: Standard temporal split
+            return self._temporal_split(data, train_ratio, validation_ratio)
+
+    def _temporal_split(self, data, train_ratio, validation_ratio):
+        """Standard temporal split for single-stock data."""
         n = len(data['close'])
 
         train_end = int(n * train_ratio)
@@ -286,7 +302,57 @@ class DataLoader:
         val_data = self._slice_data(data, train_end, val_end)
         test_data = self._slice_data(data, val_end, n)
 
-        logger.info(f"Split: Train={len(train_data['close'])}, "
+        logger.info(f"Temporal split: Train={len(train_data['close'])}, "
+                   f"Val={len(val_data['close'])}, "
+                   f"Test={len(test_data['close'])}")
+
+        return train_data, val_data, test_data
+
+    def _multi_stock_split(self, data, tickers, train_ratio, validation_ratio):
+        """
+        Split multi-stock data: Each stock split separately, then concatenate.
+
+        This ensures test set contains data from ALL stocks, not just the last one.
+        """
+        n_total = len(data['close'])
+        n_per_stock = n_total // len(tickers)
+
+        logger.info(f"Multi-stock split: {len(tickers)} stocks, {n_per_stock} points each")
+
+        train_parts = []
+        val_parts = []
+        test_parts = []
+
+        for i, ticker in enumerate(tickers):
+            # Extract this stock's data
+            start_idx = i * n_per_stock
+            end_idx = (i + 1) * n_per_stock if i < len(tickers) - 1 else n_total
+
+            stock_data = self._slice_data(data, start_idx, end_idx)
+
+            # Split this stock's data
+            stock_n = len(stock_data['close'])
+            stock_train_end = int(stock_n * train_ratio)
+            stock_val_end = int(stock_n * (train_ratio + validation_ratio))
+
+            stock_train = self._slice_data(stock_data, 0, stock_train_end)
+            stock_val = self._slice_data(stock_data, stock_train_end, stock_val_end)
+            stock_test = self._slice_data(stock_data, stock_val_end, stock_n)
+
+            train_parts.append(stock_train)
+            val_parts.append(stock_val)
+            test_parts.append(stock_test)
+
+            logger.info(f"  {ticker}: Train={len(stock_train['close'])}, "
+                       f"Val={len(stock_val['close'])}, "
+                       f"Test={len(stock_test['close'])}")
+
+        # Concatenate all parts
+        train_data = self._concatenate_data(train_parts)
+        val_data = self._concatenate_data(val_parts)
+        test_data = self._concatenate_data(test_parts)
+
+        logger.info(f"Combined: Train={len(train_data['close'])}, "
                    f"Val={len(val_data['close'])}, "
                    f"Test={len(test_data['close'])}")
 
