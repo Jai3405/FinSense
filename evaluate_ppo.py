@@ -24,7 +24,11 @@ def evaluate_ppo():
     # -----------------------------
     loader = DataLoader(data_config)
     data = loader.load_data()
-    _, _, test_data = loader.train_test_split(data)
+
+    # Use same split ratios as training
+    train_ratio = config.get('training.train_ratio', 0.7)
+    val_ratio = config.get('training.validation_ratio', 0.15)
+    _, _, test_data = loader.train_test_split(data, train_ratio, val_ratio)
 
     env = TradingEnvironment(test_data, env_config)
 
@@ -32,16 +36,16 @@ def evaluate_ppo():
     action_size = env_config.get("action_size", 3)
 
     # -----------------------------
-    # Infer state size
+    # Calculate state size dynamically (must match training)
     # -----------------------------
-    env.reset()
-    sample_state = get_state_with_features(
-        test_data,
-        env.current_step,
-        window_size,
-        env_config
-    )
-    state_size = sample_state.shape[1]
+    state_size = window_size - 1  # Price diffs
+    if config.get('environment.use_volume', True):
+        state_size += 1
+    if config.get('environment.use_technical_indicators', True):
+        state_size += 9  # RSI(1) + MACD(3) + BB(1) + ATR(1) + Trend(3)
+
+    print(f"Test set size: {len(test_data['close'])} points")
+    print(f"State size: {state_size} features")
 
     # -----------------------------
     # Load PPO agent
@@ -61,6 +65,7 @@ def evaluate_ppo():
     # Evaluation loop
     # -----------------------------
     env.reset()
+    print("\nEvaluating PPO on test set...")
 
     action_counter = Counter()
     total_reward = 0.0
