@@ -46,6 +46,13 @@ models/*.pth
 models/*.keras
 models/*.h5
 models_old*/
+models/model_ep*.json
+models/model_ep*.pt
+
+# Images and plots
+*.png
+*.jpg
+*.jpeg
 
 # Data cache
 *.cache
