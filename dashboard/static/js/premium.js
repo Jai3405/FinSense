@@ -299,6 +299,26 @@ function updateTerminal(data) {
     // Update position details
     document.getElementById('pos-price').textContent = '₹' + data.price.toFixed(2);
     document.getElementById('pos-inventory').textContent = metrics.inventory;
+    document.getElementById('pos-avgcost').textContent = '₹' + (metrics.avg_cost || 0).toFixed(2);
+
+    const unrealizedPnl = metrics.unrealized_pnl || 0;
+    const unrealizedEl = document.getElementById('pos-unrealized');
+    unrealizedEl.textContent = (unrealizedPnl >= 0 ? '+' : '') + '₹' + unrealizedPnl.toFixed(2);
+    unrealizedEl.style.color = unrealizedPnl >= 0 ? 'var(--success)' : 'var(--danger)';
+
+    const realizedPnl = metrics.total_profit - Math.abs(metrics.total_loss || 0);
+    const realizedEl = document.getElementById('pos-realized');
+    realizedEl.textContent = (realizedPnl >= 0 ? '+' : '') + '₹' + realizedPnl.toFixed(2);
+    realizedEl.style.color = realizedPnl >= 0 ? 'var(--success)' : 'var(--danger)';
+
+    // Update AI confidence levels
+    const probs = data.action_probs;
+    document.getElementById('conf-buy').style.width = (probs[0] * 100) + '%';
+    document.getElementById('conf-hold').style.width = (probs[1] * 100) + '%';
+    document.getElementById('conf-sell').style.width = (probs[2] * 100) + '%';
+    document.getElementById('conf-buy-val').textContent = (probs[0] * 100).toFixed(1) + '%';
+    document.getElementById('conf-hold-val').textContent = (probs[1] * 100).toFixed(1) + '%';
+    document.getElementById('conf-sell-val').textContent = (probs[2] * 100).toFixed(1) + '%';
 
     // Update equity chart
     equityChart.data.labels.push(timestamp);
@@ -398,9 +418,100 @@ function animateMetrics() {
     });
 }
 
-// Sound effects (optional - can add trading beeps)
-function playSound(type) {
-    // Add sound effects for trades if desired
-    // const audio = new Audio(`/static/sounds/${type}.mp3`);
-    // audio.play();
+// Error handling and connection management
+let connectionLost = false;
+let reconnectAttempts = 0;
+const MAX_RECONNECT = 5;
+
+socket.on('disconnect', function() {
+    connectionLost = true;
+    showErrorBanner('Connection lost. Attempting to reconnect...', 'warning');
+    attemptReconnect();
+});
+
+socket.on('connect_error', function(error) {
+    showErrorBanner('Connection error: ' + error.message, 'danger');
+});
+
+socket.on('reconnect', function() {
+    connectionLost = false;
+    reconnectAttempts = 0;
+    showErrorBanner('Reconnected successfully', 'success');
+    setTimeout(() => {
+        const banner = document.querySelector('.error-banner');
+        if (banner) banner.remove();
+    }, 3000);
+});
+
+function attemptReconnect() {
+    if (reconnectAttempts < MAX_RECONNECT) {
+        setTimeout(() => {
+            reconnectAttempts++;
+            socket.connect();
+        }, 2000 * reconnectAttempts);
+    } else {
+        showErrorBanner('Connection failed. Please refresh the page.', 'critical');
+    }
+}
+
+function showErrorBanner(message, severity = 'warning') {
+    // Remove existing banners
+    const existing = document.querySelector('.error-banner');
+    if (existing) existing.remove();
+
+    const banner = document.createElement('div');
+    banner.className = `error-banner ${severity}`;
+    banner.innerHTML = `
+        <span class="error-icon">${severity === 'success' ? '✓' : '⚠'}</span>
+        <span class="error-message">${message}</span>
+        <button class="error-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    document.body.insertBefore(banner, document.body.firstChild);
+}
+
+// Loading state management
+function showLoading(message = 'Initializing AI Agent...') {
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.innerHTML = `
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-text">${message}</div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 300);
+    }
+}
+
+// CSV Export functionality
+function exportTradesCSV() {
+    if (portfolioHistory.length === 0) {
+        alert('No data to export. Run a simulation first.');
+        return;
+    }
+
+    const csvRows = ['Timestamp,Price,Portfolio Value,Action,P&L'];
+    portfolioHistory.forEach((point, index) => {
+        csvRows.push(`${point.timestamp},${point.price},${point.portfolio},${point.action || 'HOLD'},${point.pnl || 0}`);
+    });
+
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `finsense_trades_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    addSystemMessage('Data exported successfully', 'success');
 }

@@ -372,6 +372,8 @@ class PaperTradingExecutor:
             'current_balance': self.balance,
             'inventory': self.inventory,
             'inventory_value': self.inventory * current_price,
+            'avg_cost': self.avg_buy_price,
+            'unrealized_pnl': (current_price - self.avg_buy_price) * self.inventory if self.inventory > 0 else 0,
             'portfolio_value': portfolio_value,
             'total_return': total_return,
             'total_return_pct': total_return_pct,

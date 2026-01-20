@@ -143,12 +143,7 @@
             <div class="chart-panel">
                 <div class="chart-header">
                     <span class="chart-title">📈 Portfolio Equity Curve</span>
-                    <div class="chart-controls">
-                        <button class="chart-btn active">1D</button>
-                        <button class="chart-btn">1W</button>
-                        <button class="chart-btn">1M</button>
-                        <button class="chart-btn">All</button>
-                    </div>
+                    <span class="chart-info">Real-time Performance</span>
                 </div>
                 <div class="chart-canvas">
                     <canvas id="equity-chart"></canvas>
@@ -181,6 +176,39 @@
                 </div>
             </div>
 
+            <div class="confidence-panel">
+                <h3 class="panel-title">AI Confidence</h3>
+                <div class="confidence-bars">
+                    <div class="confidence-item">
+                        <div class="confidence-header">
+                            <span class="confidence-label">BUY</span>
+                            <span class="confidence-value" id="conf-buy-val">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill buy" id="conf-buy" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="confidence-item">
+                        <div class="confidence-header">
+                            <span class="confidence-label">HOLD</span>
+                            <span class="confidence-value" id="conf-hold-val">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill hold" id="conf-hold" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="confidence-item">
+                        <div class="confidence-header">
+                            <span class="confidence-label">SELL</span>
+                            <span class="confidence-value" id="conf-sell-val">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill sell" id="conf-sell" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="position-details">
                 <h3 class="panel-title">Current Position</h3>
                 <div class="position-grid">
@@ -199,6 +227,14 @@
                     <div class="position-stat">
                         <div class="position-label">Avg Cost</div>
                         <div class="position-value" id="pos-avgcost">₹0.00</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Unrealized P&L</div>
+                        <div class="position-value" id="pos-unrealized">₹0.00</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Realized P&L</div>
+                        <div class="position-value" id="pos-realized">₹0.00</div>
                     </div>
                 </div>
             </div>
