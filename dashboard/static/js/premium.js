@@ -475,7 +475,7 @@ function showErrorBanner(message, severity = 'warning') {
     const banner = document.createElement('div');
     banner.className = `error-banner ${severity}`;
     banner.innerHTML = `
-        <span class="error-icon">${severity === 'success' ? '✓' : '⚠'}</span>
+        <span class="error-icon">${severity === 'success' ? '[OK]' : '[!]'}</span>
         <span class="error-message">${message}</span>
         <button class="error-close" onclick="this.parentElement.remove()">×</button>
     `;

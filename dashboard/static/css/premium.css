@@ -119,11 +119,6 @@ body::before {
     height: 100%;
 }
 
-.logo-icon {
-    font-size: 36px;
-    filter: drop-shadow(0 0 10px var(--primary));
-}
-
 .logo-text {
     display: flex;
     flex-direction: column;
@@ -447,11 +442,6 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
-}
-
-.metric-icon {
-    font-size: 18px;
-    opacity: 0.5;
 }
 
 .metric-value-pro {

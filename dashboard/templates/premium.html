@@ -7,13 +7,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23638C82' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='60' fill='%23D3E9D7' font-family='monospace' font-weight='bold'>F</text></svg>">
 </head>
 <body>
     <!-- Bloomberg-Style Terminal Header -->
     <header class="terminal-header">
         <div class="terminal-logo">
-            <span class="logo-icon">📈</span>
             <div class="logo-text">
                 <h1>FINSENSE</h1>
                 <span class="logo-subtitle">AI Trading Terminal</span>
@@ -100,7 +99,7 @@
             <div class="export-section">
                 <h3 class="panel-title">Data Export</h3>
                 <button class="btn-terminal btn-secondary" onclick="exportTradesCSV()" style="width: 100%;">
-                    📊 Export CSV
+                    Export CSV
                 </button>
             </div>
         </aside>
@@ -110,7 +109,6 @@
             <div class="metric-card-pro">
                 <div class="metric-header">
                     <span class="metric-label-pro">Portfolio Value</span>
-                    <span class="metric-icon">💼</span>
                 </div>
                 <div class="metric-value-pro" id="metric-portfolio">₹50,000</div>
                 <span class="metric-change-pro" id="metric-portfolio-change">+0.00%</span>
@@ -120,7 +118,6 @@
             <div class="metric-card-pro">
                 <div class="metric-header">
                     <span class="metric-label-pro">Sharpe Ratio</span>
-                    <span class="metric-icon">📊</span>
                 </div>
                 <div class="metric-value-pro" id="metric-sharpe">0.000</div>
                 <span class="metric-sublabel">Risk-Adjusted Return</span>
@@ -129,7 +126,6 @@
             <div class="metric-card-pro">
                 <div class="metric-header">
                     <span class="metric-label-pro">Win Rate</span>
-                    <span class="metric-icon">🎯</span>
                 </div>
                 <div class="metric-value-pro" id="metric-winrate">0.0%</div>
                 <span class="metric-sublabel">Trade Success Rate</span>
@@ -138,7 +134,6 @@
             <div class="metric-card-pro">
                 <div class="metric-header">
                     <span class="metric-label-pro">Max Drawdown</span>
-                    <span class="metric-icon">📉</span>
                 </div>
                 <div class="metric-value-pro" id="metric-drawdown">0.00%</div>
                 <span class="metric-sublabel">Peak to Trough</span>
@@ -149,7 +144,7 @@
         <section class="charts-container">
             <div class="chart-panel">
                 <div class="chart-header">
-                    <span class="chart-title">📈 Portfolio Equity Curve</span>
+                    <span class="chart-title">Portfolio Equity Curve</span>
                     <span class="chart-info">Real-time Performance</span>
                 </div>
                 <div class="chart-canvas">
@@ -159,7 +154,7 @@
 
             <div class="chart-panel">
                 <div class="chart-header">
-                    <span class="chart-title">🎯 Agent Actions</span>
+                    <span class="chart-title">Agent Actions</span>
                 </div>
                 <div class="chart-canvas">
                     <canvas id="actions-chart"></canvas>
