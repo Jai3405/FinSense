@@ -201,15 +201,31 @@ def run_trading_loop():
 
 
 if __name__ == '__main__':
+    import socket
+
+    # Try to find an available port
+    def get_available_port(start_port=5000):
+        for port in range(start_port, start_port + 10):
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.bind(('', port))
+                sock.close()
+                return port
+            except OSError:
+                continue
+        return start_port
+
+    port = get_available_port(5000)
+
     print("="*80)
     print(" FINSENSE DASHBOARD - CAPSTONE PRESENTATION")
     print("="*80)
     print()
-    print(" 🚀 Dashboard starting on http://localhost:5000")
+    print(f" 🚀 Dashboard starting on http://localhost:{port}")
     print()
-    print(" Open this URL in your browser to see the live trading dashboard.")
+    print(f" Open this URL in your browser: http://localhost:{port}")
     print(" Press Ctrl+C to stop the server.")
     print()
     print("="*80)
 
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=False, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
