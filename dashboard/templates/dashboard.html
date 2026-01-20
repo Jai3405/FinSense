@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSense - AI Trading Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">📈</span>
+                <h1>FinSense</h1>
+                <span class="subtitle">AI-Powered Trading System</span>
+            </div>
+            <div class="header-status">
+                <span class="status-indicator" id="status-indicator">●</span>
+                <span id="status-text">Idle</span>
+            </div>
+        </header>
+
+        <!-- Control Panel -->
+        <section class="control-panel">
+            <div class="control-card">
+                <h3>Simulation Controls</h3>
+                <div class="control-inputs">
+                    <div class="input-group">
+                        <label>Start Date</label>
+                        <input type="date" id="start-date" value="2024-01-01">
+                    </div>
+                    <div class="input-group">
+                        <label>End Date</label>
+                        <input type="date" id="end-date" value="2024-03-31">
+                    </div>
+                    <div class="input-group">
+                        <label>Initial Capital</label>
+                        <input type="number" id="balance" value="50000" step="1000">
+                    </div>
+                </div>
+                <div class="control-buttons">
+                    <button id="start-btn" class="btn btn-primary" onclick="startTrading()">
+                        ▶ Start Simulation
+                    </button>
+                    <button id="stop-btn" class="btn btn-secondary" onclick="stopTrading()" disabled>
+                        ⏸ Stop
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Portfolio Value</div>
+                    <div class="metric-value" id="portfolio-value">₹50,000</div>
+                    <div class="metric-change" id="portfolio-change">+0.00%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Sharpe Ratio</div>
+                    <div class="metric-value" id="sharpe">0.000</div>
+                    <div class="metric-sublabel">Risk-Adjusted Return</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Max Drawdown</div>
+                    <div class="metric-value" id="drawdown">0.00%</div>
+                    <div class="metric-sublabel">Peak to Trough</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Win Rate</div>
+                    <div class="metric-value" id="win-rate">0.0%</div>
+                    <div class="metric-sublabel">Profitable Trades</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-section">
+            <div class="chart-container">
+                <h3>Portfolio Equity Curve</h3>
+                <canvas id="equity-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Agent Actions Distribution</h3>
+                <canvas id="actions-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- Live Trading Feed -->
+        <section class="trading-feed">
+            <h3>Live Trading Activity</h3>
+            <div id="trade-log" class="trade-log">
+                <div class="trade-item info">
+                    <span class="timestamp">System ready</span>
+                    <span class="message">Click "Start Simulation" to begin</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Current Position -->
+        <section class="position-panel">
+            <h3>Current Position</h3>
+            <div class="position-details">
+                <div class="position-item">
+                    <span class="label">Stock:</span>
+                    <span class="value" id="stock-name">RELIANCE.NS</span>
+                </div>
+                <div class="position-item">
+                    <span class="label">Current Price:</span>
+                    <span class="value" id="current-price">₹0.00</span>
+                </div>
+                <div class="position-item">
+                    <span class="label">Shares Held:</span>
+                    <span class="value" id="inventory">0</span>
+                </div>
+                <div class="position-item">
+                    <span class="label">Cash Balance:</span>
+                    <span class="value" id="balance">₹50,000</span>
+                </div>
+                <div class="position-item">
+                    <span class="label">Total Trades:</span>
+                    <span class="value" id="total-trades">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>FinSense AI Trading System | Capstone Project 2026 | Powered by PPO Reinforcement Learning</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
