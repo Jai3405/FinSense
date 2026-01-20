@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSense Terminal - Enterprise AI Trading Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+</head>
+<body>
+    <!-- Bloomberg-Style Terminal Header -->
+    <header class="terminal-header">
+        <div class="terminal-logo">
+            <span class="logo-icon">📈</span>
+            <div class="logo-text">
+                <h1>FINSENSE</h1>
+                <span class="logo-subtitle">AI Trading Terminal</span>
+            </div>
+        </div>
+
+        <div class="terminal-ticker">
+            <div class="ticker-item">
+                <span class="ticker-label">RELIANCE.NS</span>
+                <span class="ticker-value" id="live-price">₹0.00</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">Portfolio</span>
+                <span class="ticker-value up" id="live-portfolio">₹50,000</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">P&L</span>
+                <span class="ticker-value" id="live-pnl">₹0.00</span>
+            </div>
+        </div>
+
+        <div class="terminal-status">
+            <div class="status-pill">
+                <span class="status-dot" id="system-status"></span>
+                <span class="status-text" id="status-label">System Idle</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Terminal Grid -->
+    <div class="terminal-grid">
+        <!-- Left Control Panel -->
+        <aside class="control-panel">
+            <h2 class="panel-title">Simulation Controls</h2>
+
+            <div class="control-section">
+                <label class="control-label">Start Date</label>
+                <input type="date" class="control-input" id="start-date" value="2024-01-01">
+            </div>
+
+            <div class="control-section">
+                <label class="control-label">End Date</label>
+                <input type="date" class="control-input" id="end-date" value="2024-03-31">
+            </div>
+
+            <div class="control-section">
+                <label class="control-label">Initial Capital (₹)</label>
+                <input type="number" class="control-input" id="capital" value="50000" step="1000">
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn-terminal btn-primary" id="start-btn" onclick="startTrading()">
+                    ▶ Start
+                </button>
+                <button class="btn-terminal btn-secondary" id="stop-btn" onclick="stopTrading()" disabled>
+                    ⏸ Stop
+                </button>
+            </div>
+
+            <div class="market-stats">
+                <h3 class="panel-title">Market Statistics</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Simulation Step</span>
+                    <span class="stat-value" id="current-step">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Cash Balance</span>
+                    <span class="stat-value" id="cash-balance">₹50,000</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Shares Held</span>
+                    <span class="stat-value" id="shares-held">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Position Value</span>
+                    <span class="stat-value" id="position-value">₹0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Trades</span>
+                    <span class="stat-value" id="total-trades">0</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Top Metrics Grid -->
+        <section class="metrics-grid">
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Portfolio Value</span>
+                    <span class="metric-icon">💼</span>
+                </div>
+                <div class="metric-value-pro" id="metric-portfolio">₹50,000</div>
+                <span class="metric-change-pro" id="metric-portfolio-change">+0.00%</span>
+                <div class="metric-sublabel">Total Assets</div>
+            </div>
+
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Sharpe Ratio</span>
+                    <span class="metric-icon">📊</span>
+                </div>
+                <div class="metric-value-pro" id="metric-sharpe">0.000</div>
+                <span class="metric-sublabel">Risk-Adjusted Return</span>
+            </div>
+
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Win Rate</span>
+                    <span class="metric-icon">🎯</span>
+                </div>
+                <div class="metric-value-pro" id="metric-winrate">0.0%</div>
+                <span class="metric-sublabel">Trade Success Rate</span>
+            </div>
+
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Max Drawdown</span>
+                    <span class="metric-icon">📉</span>
+                </div>
+                <div class="metric-value-pro" id="metric-drawdown">0.00%</div>
+                <span class="metric-sublabel">Peak to Trough</span>
+            </div>
+        </section>
+
+        <!-- Charts Area -->
+        <section class="charts-container">
+            <div class="chart-panel">
+                <div class="chart-header">
+                    <span class="chart-title">📈 Portfolio Equity Curve</span>
+                    <div class="chart-controls">
+                        <button class="chart-btn active">1D</button>
+                        <button class="chart-btn">1W</button>
+                        <button class="chart-btn">1M</button>
+                        <button class="chart-btn">All</button>
+                    </div>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="equity-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-panel">
+                <div class="chart-header">
+                    <span class="chart-title">🎯 Agent Actions</span>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="actions-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Activity Feed -->
+        <aside class="activity-panel">
+            <div class="activity-header">
+                <span class="activity-title">Live Activity</span>
+                <span class="activity-badge" id="activity-count">0</span>
+            </div>
+
+            <div class="activity-feed" id="activity-feed">
+                <div class="activity-item info">
+                    <div class="activity-time">System Ready</div>
+                    <div class="activity-content">
+                        <span class="activity-action">Click "Start" to begin simulation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="position-details">
+                <h3 class="panel-title">Current Position</h3>
+                <div class="position-grid">
+                    <div class="position-stat">
+                        <div class="position-label">Stock</div>
+                        <div class="position-value">RELIANCE.NS</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Price</div>
+                        <div class="position-value" id="pos-price">₹0.00</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Inventory</div>
+                        <div class="position-value" id="pos-inventory">0</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Avg Cost</div>
+                        <div class="position-value" id="pos-avgcost">₹0.00</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/premium.js') }}"></script>
+</body>
+</html>

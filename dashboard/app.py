@@ -42,8 +42,8 @@ trading_state = {
 
 @app.route('/')
 def index():
-    """Main dashboard page."""
-    return render_template('dashboard.html')
+    """Main dashboard page - Premium Terminal."""
+    return render_template('premium.html')
 
 
 @app.route('/api/status')
