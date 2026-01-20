@@ -196,6 +196,9 @@ function startTrading() {
 
     startingBalance = capital;
 
+    // Show loading state
+    showLoading('Initializing AI Agent...');
+
     // Reset state
     portfolioHistory = [];
     actionCounts = { BUY: 0, HOLD: 0, SELL: 0 };
@@ -210,12 +213,6 @@ function startTrading() {
 
     document.getElementById('activity-feed').innerHTML = '';
 
-    // Update UI
-    document.getElementById('system-status').classList.add('active');
-    document.getElementById('status-label').textContent = 'Running';
-    document.getElementById('start-btn').disabled = true;
-    document.getElementById('stop-btn').disabled = false;
-
     // Send request
     fetch('/api/start', {
         method: 'POST',
@@ -228,15 +225,22 @@ function startTrading() {
     })
     .then(response => response.json())
     .then(data => {
+        hideLoading();
         if (data.success) {
+            // Update UI
+            document.getElementById('system-status').classList.add('active');
+            document.getElementById('status-label').textContent = 'Running';
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = false;
             addSystemMessage('Simulation started', 'success');
         } else {
-            alert('Error: ' + data.error);
+            showErrorBanner('Error: ' + data.error, 'danger');
             resetUI();
         }
     })
     .catch(error => {
-        alert('Connection error: ' + error);
+        hideLoading();
+        showErrorBanner('Connection error: ' + error.message, 'danger');
         resetUI();
     });
 }
@@ -266,6 +270,15 @@ function resetUI() {
 function updateTerminal(data) {
     const metrics = data.metrics;
     const timestamp = new Date(data.timestamp).toLocaleDateString('en-IN');
+
+    // Track portfolio history for export
+    portfolioHistory.push({
+        timestamp: data.timestamp,
+        price: data.price,
+        portfolio: metrics.portfolio_value,
+        action: data.action,
+        pnl: data.trade && data.trade.pnl ? data.trade.pnl : 0
+    });
 
     // Update header ticker
     document.getElementById('live-price').textContent = '₹' + data.price.toFixed(2);
