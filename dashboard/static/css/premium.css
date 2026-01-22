@@ -1,7 +1,15 @@
-/* FINSENSE PREMIUM - Enterprise Trading Terminal Design */
+/* SPIKE TERMINAL - Enterprise Trading Terminal Design */
 /* Inspired by Bloomberg Terminal, TradingView Pro, and Institutional Platforms */
+/* Built with cutting-edge CSS features (2026) */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* CSS Layers for better organization (Latest CSS feature) */
+@layer base, components, utilities;
+
+@layer base {
+    /* Base layer styles */
+}
 
 * {
     margin: 0;
@@ -122,24 +130,33 @@ body::before {
 .logo-text {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .logo-text h1 {
-    font-size: 28px;
+    font-size: 36px;
     font-weight: 900;
+    font-family: 'Inter', sans-serif;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     letter-spacing: -1px;
+    text-transform: uppercase;
+    transform: skewX(-8deg);
+    font-style: italic;
+    line-height: 1;
 }
 
 .logo-subtitle {
-    font-size: 10px;
+    font-size: 8px;
     color: var(--text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 5px;
     font-weight: 600;
+    opacity: 0.7;
+    padding-left: 3px;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 .terminal-ticker {
@@ -436,6 +453,19 @@ body::before {
     margin-bottom: 15px;
 }
 
+.metric-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-light);
+    opacity: 0.6;
+    transition: all 0.3s;
+}
+
+.metric-card-pro:hover .metric-icon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
 .metric-label-pro {
     font-size: 11px;
     color: var(--text-tertiary);
@@ -513,6 +543,19 @@ body::before {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.chart-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--primary-light);
+    opacity: 0.8;
+}
+
+.chart-info {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
 }
 
 .chart-controls {
@@ -969,3 +1012,460 @@ body::before {
         grid-template-columns: 1fr;
     }
 }
+
+/* Modern CSS Features (2026) */
+
+/* CSS Nesting support */
+@supports (selector(&)) {
+    .metric-card-pro {
+        & .metric-icon {
+            transition: all 0.3s;
+        }
+
+        &:hover .metric-icon {
+            transform: scale(1.1);
+        }
+    }
+}
+
+/* Modern color mixing */
+@supports (background: color-mix(in srgb, red, blue)) {
+    .success-glow {
+        background: color-mix(in srgb, var(--success) 20%, transparent);
+    }
+
+    .danger-glow {
+        background: color-mix(in srgb, var(--danger) 20%, transparent);
+    }
+}
+
+/* View Transitions API support (2026 Cutting Edge) */
+@media (prefers-reduced-motion: no-preference) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 0.3s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Smooth fade transitions */
+    ::view-transition-old(metric-card),
+    ::view-transition-new(metric-card) {
+        animation-duration: 0.4s;
+    }
+
+    /* Slide transitions for activity items */
+    ::view-transition-old(activity),
+    ::view-transition-new(activity) {
+        animation-duration: 0.25s;
+        animation-timing-function: ease-out;
+    }
+}
+
+/* Container Queries (Latest responsive design) */
+@container (inline-size < 600px) {
+    .metrics-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Modern :has() selector */
+.activity-item:has(.positive) {
+    border-left-color: var(--success);
+}
+
+.activity-item:has(.negative) {
+    border-left-color: var(--danger);
+}
+
+/* CSS Scroll Snap for smooth scrolling */
+.activity-feed {
+    scroll-snap-type: y mandatory;
+}
+
+.activity-item {
+    scroll-snap-align: start;
+}
+
+/* Advanced backdrop filters */
+@supports (backdrop-filter: blur(10px)) {
+    .terminal-header {
+        backdrop-filter: blur(20px) saturate(180%);
+        background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+    }
+}
+
+/* GPU-accelerated animations */
+.metric-card-pro {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Modern aspect-ratio (no padding hacks) */
+.chart-canvas {
+    aspect-ratio: 16 / 9;
+}
+
+/* CSS Grid Subgrid */
+@supports (grid-template-columns: subgrid) {
+    .position-grid {
+        grid-template-columns: subgrid;
+    }
+}
+
+/* Smooth scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 10px;
+    border: 2px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-light);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--bg-primary);
+}
+
+/* ========== ADVANCED 2026 FEATURES ========== */
+
+/* Scroll-driven animations (Latest CSS feature) */
+@supports (animation-timeline: scroll()) {
+    @keyframes reveal {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .activity-item {
+        animation: reveal linear;
+        animation-timeline: view();
+        animation-range: entry 0% cover 30%;
+    }
+}
+
+/* Advanced gradient borders with conic gradients */
+.metric-card-pro.premium-border {
+    position: relative;
+    background: var(--bg-card);
+    border: none;
+}
+
+.metric-card-pro.premium-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    padding: 2px;
+    background: conic-gradient(
+        from 180deg at 50% 50%,
+        var(--primary) 0deg,
+        var(--primary-light) 90deg,
+        var(--primary) 180deg,
+        var(--primary-dark) 270deg,
+        var(--primary) 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    animation: rotate-border 4s linear infinite;
+}
+
+@keyframes rotate-border {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Advanced text gradients with animation */
+.animated-gradient-text {
+    background: linear-gradient(
+        90deg,
+        var(--primary) 0%,
+        var(--primary-light) 25%,
+        var(--primary) 50%,
+        var(--primary-light) 75%,
+        var(--primary) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-flow 3s linear infinite;
+}
+
+@keyframes gradient-flow {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* Glassmorphism effect (2026 trend) */
+.glass-panel {
+    background: rgba(20, 25, 32, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 8px 32px 0 rgba(0, 0, 0, 0.37),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Neon glow effect on hover */
+.neon-glow:hover {
+    text-shadow:
+        0 0 7px var(--primary-light),
+        0 0 10px var(--primary-light),
+        0 0 21px var(--primary-light),
+        0 0 42px var(--primary),
+        0 0 82px var(--primary),
+        0 0 92px var(--primary),
+        0 0 102px var(--primary),
+        0 0 151px var(--primary);
+    animation: neon-flicker 1.5s infinite alternate;
+}
+
+@keyframes neon-flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        filter: brightness(1);
+    }
+    20%, 24%, 55% {
+        filter: brightness(0.8);
+    }
+}
+
+/* Loading skeleton animation */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--bg-primary) 0%,
+        var(--bg-elevated) 50%,
+        var(--bg-primary) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Particle effect background (optional enhancement) */
+@keyframes float-particles {
+    0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translateY(-20px) translateX(10px);
+        opacity: 0.6;
+    }
+}
+
+.particle {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float-particles 6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Enhanced focus states for accessibility */
+*:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --bg-primary: #000000;
+        --text-primary: #FFFFFF;
+        --border-primary: #FFFFFF;
+    }
+
+    .metric-card-pro,
+    .chart-panel,
+    .activity-panel {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support (accessibility) */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode preference (system level) */
+@media (prefers-color-scheme: dark) {
+    /* Already dark by default */
+}
+
+/* Light mode (if user prefers) */
+@media (prefers-color-scheme: light) {
+    /* Keep dark theme for terminal aesthetic */
+    /* Override if needed in future */
+}
+
+/* Print styles (for reports) */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+
+    .terminal-header,
+    .control-panel,
+    .btn-terminal {
+        display: none;
+    }
+
+    .terminal-grid {
+        display: block;
+    }
+
+    .metric-card-pro,
+    .chart-panel {
+        page-break-inside: avoid;
+        border: 1px solid black;
+    }
+}
+
+/* 4K and Ultra-wide support */
+@media (min-width: 2560px) {
+    .terminal-grid {
+        max-width: 2400px;
+        margin: 0 auto;
+        grid-template-columns: 400px 1fr 450px;
+    }
+
+    .metric-value-pro {
+        font-size: 40px;
+    }
+
+    .chart-title {
+        font-size: 20px;
+    }
+}
+
+/* Mobile optimizations (progressive enhancement) */
+@media (max-width: 768px) {
+    .terminal-grid {
+        grid-template-columns: 1fr;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .metric-value-pro {
+        font-size: 24px;
+    }
+
+    .terminal-header {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+    }
+
+    .terminal-ticker {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Experimental CSS features with @supports */
+@supports (backdrop-filter: blur(10px)) {
+    .glass-effect {
+        backdrop-filter: blur(10px) saturate(150%);
+        background: rgba(20, 25, 32, 0.8);
+    }
+}
+
+@supports (mix-blend-mode: screen) {
+    .blend-overlay {
+        mix-blend-mode: screen;
+        opacity: 0.1;
+    }
+}
+
+/* CSS Houdini Paint API (future enhancement placeholder) */
+@supports (background: paint(something)) {
+    /* Placeholder for custom paint worklets */
+}
+
+/* Subpixel antialiasing */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* GPU acceleration hints */
+.accelerate {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Selection styling */
+::selection {
+    background: var(--primary);
+    color: white;
+}
+
+::-moz-selection {
+    background: var(--primary);
+    color: white;
+}
+
+/* Smooth scrolling behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Custom cursor for interactive elements */
+.interactive-cursor {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="%23638C82"/></svg>') 12 12, auto;
+}
+
+/* END OF 2026 CUTTING EDGE CSS FEATURES */
