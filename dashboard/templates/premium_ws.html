@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPIKE Terminal - Enterprise AI Trading Platform</title>
+    <link rel="stylesheet" href="/static/css/premium.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23638C82' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='55' fill='%23D3E9D7' font-family='Inter' font-weight='900'>S</text></svg>">
+    <meta name="theme-color" content="#638C82">
+    <meta name="description" content="SPIKE Terminal - Enterprise AI Trading Platform with Real-time Analytics">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+</head>
+<body>
+    <!-- Bloomberg-Style Terminal Header -->
+    <header class="terminal-header">
+        <div class="terminal-logo">
+            <div class="logo-text">
+                <h1>SPIKE</h1>
+                <span class="logo-subtitle">TERMINAL</span>
+            </div>
+        </div>
+
+        <div class="terminal-ticker">
+            <div class="ticker-item">
+                <span class="ticker-label">RELIANCE.NS</span>
+                <span class="ticker-value" id="live-price">₹0.00</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">Portfolio</span>
+                <span class="ticker-value up" id="live-portfolio">₹50,000</span>
+            </div>
+            <div class="ticker-item">
+                <span class="ticker-label">P&L</span>
+                <span class="ticker-value" id="live-pnl">₹0.00</span>
+            </div>
+        </div>
+
+        <div class="terminal-status">
+            <div class="status-pill">
+                <span class="status-dot" id="system-status"></span>
+                <span class="status-text" id="status-label">System Idle</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Terminal Grid -->
+    <div class="terminal-grid">
+        <!-- Left Control Panel -->
+        <aside class="control-panel">
+            <h2 class="panel-title">Simulation Controls</h2>
+
+            <div class="control-section">
+                <label class="control-label">Start Date</label>
+                <input type="date" class="control-input" id="start-date" value="2024-01-01">
+            </div>
+
+            <div class="control-section">
+                <label class="control-label">End Date</label>
+                <input type="date" class="control-input" id="end-date" value="2024-03-31">
+            </div>
+
+            <div class="control-section">
+                <label class="control-label">Initial Capital (₹)</label>
+                <input type="number" class="control-input" id="capital" value="50000" step="1000">
+            </div>
+
+            <div class="control-buttons">
+                <button class="btn-terminal btn-primary" id="start-btn" onclick="startTrading()">
+                    ▶ Start
+                </button>
+                <button class="btn-terminal btn-secondary" id="stop-btn" onclick="stopTrading()" disabled>
+                    ⏸ Stop
+                </button>
+            </div>
+
+            <div class="market-stats">
+                <h3 class="panel-title">Market Statistics</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Simulation Step</span>
+                    <span class="stat-value" id="current-step">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Cash Balance</span>
+                    <span class="stat-value" id="cash-balance">₹50,000</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Shares Held</span>
+                    <span class="stat-value" id="shares-held">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Position Value</span>
+                    <span class="stat-value" id="position-value">₹0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Trades</span>
+                    <span class="stat-value" id="total-trades">0</span>
+                </div>
+            </div>
+
+            <div class="export-section">
+                <h3 class="panel-title">Data Export</h3>
+                <button class="btn-terminal btn-secondary" onclick="exportTradesCSV()" style="width: 100%;">
+                    Export CSV
+                </button>
+            </div>
+        </aside>
+
+        <!-- Top Metrics Grid -->
+        <section class="metrics-grid">
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Portfolio Value</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="metric-value-pro" id="metric-portfolio">₹50,000</div>
+                <span class="metric-change-pro" id="metric-portfolio-change">+0.00%</span>
+                <div class="metric-sublabel">Total Assets</div>
+            </div>
+
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Sharpe Ratio</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="metric-value-pro" id="metric-sharpe">0.000</div>
+                <span class="metric-sublabel">Risk-Adjusted Return</span>
+            </div>
+
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Win Rate</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="metric-value-pro" id="metric-winrate">0.0%</div>
+                <span class="metric-sublabel">Trade Success Rate</span>
+            </div>
+
+            <div class="metric-card-pro">
+                <div class="metric-header">
+                    <span class="metric-label-pro">Max Drawdown</span>
+                    <svg class="metric-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6h-6z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="metric-value-pro" id="metric-drawdown">0.00%</div>
+                <span class="metric-sublabel">Peak to Trough</span>
+            </div>
+        </section>
+
+        <!-- Charts Area -->
+        <section class="charts-container">
+            <div class="chart-panel">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <svg class="chart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z" fill="currentColor"/>
+                        </svg>
+                        <span>Portfolio Equity Curve</span>
+                    </div>
+                    <span class="chart-info">Real-time Performance</span>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="equity-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-panel">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <svg class="chart-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" fill="currentColor"/>
+                        </svg>
+                        <span>Agent Actions</span>
+                    </div>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="actions-chart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Activity Feed -->
+        <aside class="activity-panel">
+            <div class="activity-header">
+                <span class="activity-title">Live Activity</span>
+                <span class="activity-badge" id="activity-count">0</span>
+            </div>
+
+            <div class="activity-feed" id="activity-feed">
+                <div class="activity-item info">
+                    <div class="activity-time">System Ready</div>
+                    <div class="activity-content">
+                        <span class="activity-action">Click "Start" to begin simulation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="confidence-panel">
+                <h3 class="panel-title">AI Confidence</h3>
+                <div class="confidence-bars">
+                    <div class="confidence-item">
+                        <div class="confidence-header">
+                            <span class="confidence-label">BUY</span>
+                            <span class="confidence-value" id="conf-buy-val">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill buy" id="conf-buy" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="confidence-item">
+                        <div class="confidence-header">
+                            <span class="confidence-label">HOLD</span>
+                            <span class="confidence-value" id="conf-hold-val">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill hold" id="conf-hold" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="confidence-item">
+                        <div class="confidence-header">
+                            <span class="confidence-label">SELL</span>
+                            <span class="confidence-value" id="conf-sell-val">0%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill sell" id="conf-sell" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="position-details">
+                <h3 class="panel-title">Current Position</h3>
+                <div class="position-grid">
+                    <div class="position-stat">
+                        <div class="position-label">Stock</div>
+                        <div class="position-value">RELIANCE.NS</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Price</div>
+                        <div class="position-value" id="pos-price">₹0.00</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Inventory</div>
+                        <div class="position-value" id="pos-inventory">0</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Avg Cost</div>
+                        <div class="position-value" id="pos-avgcost">₹0.00</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Unrealized P&L</div>
+                        <div class="position-value" id="pos-unrealized">₹0.00</div>
+                    </div>
+                    <div class="position-stat">
+                        <div class="position-label">Realized P&L</div>
+                        <div class="position-value" id="pos-realized">₹0.00</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Loading Overlay with Modern Animation -->
+    <div id="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-text">Initializing Neural Network...</div>
+        </div>
+    </div>
+
+    <!-- Performance Monitor (Dev Mode - Hidden by Default) -->
+    <div id="perf-monitor" style="display: none; position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: var(--success); padding: 15px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; z-index: 10000;">
+        <div>FPS: <span id="perf-fps">60</span></div>
+        <div>Updates: <span id="perf-updates">0</span></div>
+        <div>Avg Time: <span id="perf-avgtime">0</span>ms</div>
+        <div>Memory: <span id="perf-memory">-</span> MB</div>
+    </div>
+
+    <script src="/static/js/premium_ultimate.js"></script>
+
+    <!-- Enable performance monitor with Shift+P -->
+    <script>
+        document.addEventListener('keydown', (e) => {
+            if (e.shiftKey && e.key === 'P') {
+                const monitor = document.getElementById('perf-monitor');
+                monitor.style.display = monitor.style.display === 'none' ? 'block' : 'none';
+
+                if (monitor.style.display === 'block') {
+                    // Update performance metrics every second
+                    setInterval(() => {
+                        document.getElementById('perf-updates').textContent = performanceMetrics.updateCount;
+                        document.getElementById('perf-avgtime').textContent = performanceMetrics.avgUpdateTime.toFixed(2);
+
+                        if (performance.memory) {
+                            document.getElementById('perf-memory').textContent = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+                        }
+                    }, 1000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
