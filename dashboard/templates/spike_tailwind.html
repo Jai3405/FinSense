@@ -109,12 +109,12 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Metric cards */
+        /* Metric cards - BIGGER */
         .metric-card-pro {
             background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
             border: 1px solid var(--border-primary);
             border-radius: 12px;
-            padding: 20px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
@@ -177,10 +177,10 @@
 
         /* Buttons */
         .btn-terminal {
-            padding: 14px 20px;
+            padding: 16px 24px;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
@@ -232,9 +232,9 @@
             border-color: var(--primary);
         }
 
-        /* Activity feed */
+        /* Activity feed - FIXED HEIGHT */
         .activity-feed {
-            flex: 1;
+            height: 320px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -261,6 +261,7 @@
             border-radius: 8px;
             padding: 15px;
             animation: slideInRight 0.3s ease-out;
+            flex-shrink: 0;
         }
 
         @keyframes slideInRight {
@@ -286,9 +287,9 @@
 
         /* Confidence bars */
         .confidence-bar {
-            height: 8px;
+            height: 10px;
             background: var(--bg-primary);
-            border-radius: 4px;
+            border-radius: 5px;
             overflow: hidden;
             position: relative;
         }
@@ -384,12 +385,12 @@
 
         /* Panel title */
         .panel-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--primary-light);
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -398,7 +399,7 @@
         .panel-title::before {
             content: '';
             width: 3px;
-            height: 16px;
+            height: 14px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             border-radius: 2px;
         }
@@ -441,7 +442,7 @@
     <!-- MAIN GRID LAYOUT -->
     <div class="grid grid-cols-[350px_1fr_400px] gap-4 p-4 h-[calc(100vh-70px)]">
         <!-- LEFT SIDEBAR - CONTROL PANEL -->
-        <div class="control-panel flex flex-col gap-6">
+        <div class="control-panel flex flex-col gap-5">
             <!-- Simulation Controls -->
             <div>
                 <div class="panel-title">Simulation Controls</div>
@@ -468,35 +469,35 @@
             </div>
 
             <!-- Market Statistics -->
-            <div class="pt-5 border-t border-gray-800">
+            <div class="pt-4 border-t border-gray-800">
                 <div class="panel-title">Market Statistics</div>
 
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500">Simulation Step</span>
+                        <span class="text-xs text-gray-500 font-semibold">Simulation Step</span>
                         <span class="text-sm font-bold text-white font-mono" id="current-step">0</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500">Cash Balance</span>
+                        <span class="text-xs text-gray-500 font-semibold">Cash Balance</span>
                         <span class="text-sm font-bold text-white font-mono" id="cash-balance">₹50,000</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500">Shares Held</span>
+                        <span class="text-xs text-gray-500 font-semibold">Shares Held</span>
                         <span class="text-sm font-bold text-white font-mono" id="shares-held">0</span>
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500">Position Value</span>
+                        <span class="text-xs text-gray-500 font-semibold">Position Value</span>
                         <span class="text-sm font-bold text-white font-mono" id="position-value">₹0</span>
                     </div>
                     <div class="flex justify-between items-center py-2">
-                        <span class="text-xs text-gray-500">Total Trades</span>
+                        <span class="text-xs text-gray-500 font-semibold">Total Trades</span>
                         <span class="text-sm font-bold text-white font-mono" id="total-trades">0</span>
                     </div>
                 </div>
             </div>
 
             <!-- Data Export -->
-            <div class="pt-5 border-t border-gray-800">
+            <div class="pt-4 border-t border-gray-800">
                 <div class="panel-title">Data Export</div>
                 <button onclick="exportTradesCSV()" class="btn-terminal btn-secondary w-full">Export CSV</button>
             </div>
@@ -508,8 +509,8 @@
             <div class="grid grid-cols-4 gap-4">
                 <!-- Portfolio Value -->
                 <div class="metric-card-pro">
-                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Portfolio Value</div>
-                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-portfolio">₹50,000</div>
+                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Portfolio Value</div>
+                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-portfolio">₹50,000</div>
                     <div class="text-sm font-bold" id="metric-portfolio-change">
                         <span class="text-green-400">+0.00%</span>
                     </div>
@@ -517,23 +518,23 @@
 
                 <!-- Sharpe Ratio -->
                 <div class="metric-card-pro">
-                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Sharpe Ratio</div>
-                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-sharpe">4.235</div>
-                    <div class="text-xs text-gray-600 mt-1">Risk-Adjusted Return</div>
+                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Sharpe Ratio</div>
+                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-sharpe">4.235</div>
+                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">Risk-Adjusted Return</div>
                 </div>
 
                 <!-- Win Rate -->
                 <div class="metric-card-pro">
-                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Win Rate</div>
-                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-winrate">66.7%</div>
-                    <div class="text-xs text-gray-600 mt-1">Profitable Trades</div>
+                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Win Rate</div>
+                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-winrate">66.7%</div>
+                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">Profitable Trades</div>
                 </div>
 
                 <!-- Max Drawdown -->
                 <div class="metric-card-pro">
-                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Max Drawdown</div>
-                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-drawdown">0.55%</div>
-                    <div class="text-xs text-gray-600 mt-1">Peak-to-Trough</div>
+                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Max Drawdown</div>
+                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-drawdown">0.55%</div>
+                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">Peak-to-Trough</div>
                 </div>
             </div>
 
@@ -542,7 +543,7 @@
                 <!-- Portfolio Equity Curve -->
                 <div class="chart-panel">
                     <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
-                        <div class="text-base font-bold text-green-300">Portfolio Equity Curve</div>
+                        <div class="text-base font-bold text-green-300">📈 Portfolio Equity Curve</div>
                         <div class="text-xs text-gray-500">Real-time Performance</div>
                     </div>
                     <div style="height: calc(100% - 60px);">
@@ -553,7 +554,7 @@
                 <!-- Agent Actions -->
                 <div class="chart-panel">
                     <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
-                        <div class="text-base font-bold text-green-300">Agent Actions</div>
+                        <div class="text-base font-bold text-green-300">🎯 Agent Actions</div>
                     </div>
                     <div style="height: calc(100% - 60px);">
                         <canvas id="actions-chart"></canvas>
@@ -562,27 +563,27 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDEBAR - ACTIVITY & CONFIDENCE -->
-        <div class="control-panel flex flex-col">
-            <!-- Live Activity -->
-            <div class="flex-1 flex flex-col">
-                <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
-                    <div class="panel-title !mb-0">Live Activity</div>
-                    <div class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold" id="activity-count">0</div>
-                </div>
-                <div class="activity-feed" id="activity-feed">
-                    <!-- Activity items will be added here dynamically -->
-                </div>
+        <!-- RIGHT SIDEBAR - FIXED HEIGHT SECTIONS -->
+        <div class="control-panel grid grid-rows-[auto_320px_auto_1fr] gap-4">
+            <!-- Live Activity Header -->
+            <div class="flex justify-between items-center pb-3 border-b border-gray-800">
+                <div class="panel-title !mb-0">Live Activity</div>
+                <div class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold" id="activity-count">0</div>
+            </div>
+
+            <!-- Live Activity Feed - FIXED 320px HEIGHT -->
+            <div class="activity-feed" id="activity-feed">
+                <!-- Activity items will be added here dynamically -->
             </div>
 
             <!-- AI Confidence -->
-            <div class="mt-5 pt-5 border-t border-gray-800">
+            <div class="pt-4 border-t border-gray-800">
                 <div class="panel-title">AI Confidence</div>
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-gray-500 uppercase tracking-wide font-bold">BUY</span>
-                            <span class="text-xs font-bold text-white font-mono" id="conf-buy-val">33.3%</span>
+                            <span class="text-xs text-gray-400 uppercase tracking-wide font-bold">BUY</span>
+                            <span class="text-sm font-bold text-white font-mono" id="conf-buy-val">33.3%</span>
                         </div>
                         <div class="confidence-bar">
                             <div class="confidence-fill buy" id="conf-buy" style="width: 33.3%"></div>
@@ -590,8 +591,8 @@
                     </div>
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-gray-500 uppercase tracking-wide font-bold">HOLD</span>
-                            <span class="text-xs font-bold text-white font-mono" id="conf-hold-val">33.3%</span>
+                            <span class="text-xs text-gray-400 uppercase tracking-wide font-bold">HOLD</span>
+                            <span class="text-sm font-bold text-white font-mono" id="conf-hold-val">33.3%</span>
                         </div>
                         <div class="confidence-bar">
                             <div class="confidence-fill hold" id="conf-hold" style="width: 33.3%"></div>
@@ -599,8 +600,8 @@
                     </div>
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-gray-500 uppercase tracking-wide font-bold">SELL</span>
-                            <span class="text-xs font-bold text-white font-mono" id="conf-sell-val">33.3%</span>
+                            <span class="text-xs text-gray-400 uppercase tracking-wide font-bold">SELL</span>
+                            <span class="text-sm font-bold text-white font-mono" id="conf-sell-val">33.3%</span>
                         </div>
                         <div class="confidence-bar">
                             <div class="confidence-fill sell" id="conf-sell" style="width: 33.3%"></div>
@@ -610,31 +611,31 @@
             </div>
 
             <!-- Current Position -->
-            <div class="mt-5 pt-5 border-t border-gray-800">
+            <div class="pt-4 border-t border-gray-800">
                 <div class="panel-title">Current Position</div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Stock</div>
+                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Stock</div>
                         <div class="text-white font-bold text-sm" id="pos-stock">RELIANCE.NS</div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Price</div>
+                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Price</div>
                         <div class="text-white font-bold text-sm font-mono" id="pos-price">₹1,474.93</div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Inventory</div>
+                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Inventory</div>
                         <div class="text-white font-bold text-sm font-mono" id="pos-inventory">0</div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Avg Cost</div>
+                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Avg Cost</div>
                         <div class="text-white font-bold text-sm font-mono" id="pos-avgcost">₹1,468.69</div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Unrealized P&L</div>
+                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Unrealized P&L</div>
                         <div class="text-green-400 font-bold text-sm" id="pos-unrealized">+₹210.09</div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Realized P&L</div>
+                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Realized P&L</div>
                         <div class="text-green-400 font-bold text-sm" id="pos-realized">+₹13.00</div>
                     </div>
                 </div>
