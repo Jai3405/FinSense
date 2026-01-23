@@ -41,8 +41,8 @@ trading_state = {
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    """Serve main dashboard."""
-    return templates.TemplateResponse("premium_ws.html", {"request": request})
+    """Serve main dashboard with Tailwind CSS."""
+    return templates.TemplateResponse("spike_tailwind.html", {"request": request})
 
 
 @app.get("/test_websocket", response_class=HTMLResponse)
