@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test - FastAPI</title>
+</head>
+<body>
+    <h1>FastAPI WebSocket Test</h1>
+    <div id="status" style="color: red;">Disconnected</div>
+    <button onclick="startTest()">Start Simulation</button>
+    <button onclick="stopTest()">Stop</button>
+    <div id="log" style="margin-top:20px; font-family:monospace; white-space:pre-wrap; background:#f5f5f5; padding:10px;"></div>
+
+    <script>
+        let ws = null;
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+
+        function addLog(msg) {
+            log.textContent += new Date().toLocaleTimeString() + ': ' + msg + '\n';
+            log.scrollTop = log.scrollHeight;
+            console.log(msg);
+        }
+
+        function connect() {
+            addLog('Connecting to WebSocket...');
+            ws = new WebSocket('ws://localhost:8000/ws');
+
+            ws.onopen = () => {
+                status.textContent = 'Connected';
+                status.style.color = 'green';
+                addLog('✓ WebSocket connected');
+            };
+
+            ws.onclose = () => {
+                status.textContent = 'Disconnected';
+                status.style.color = 'red';
+                addLog('✗ WebSocket disconnected');
+            };
+
+            ws.onerror = (error) => {
+                addLog('✗ WebSocket error: ' + error);
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'trading_update') {
+                    const probs = data.action_probs;
+                    addLog(`📊 Step ${data.step}: ${data.action} @ ₹${data.price.toFixed(2)}`);
+                    addLog(`   AI: BUY=${(probs[0]*100).toFixed(1)}% HOLD=${(probs[1]*100).toFixed(1)}% SELL=${(probs[2]*100).toFixed(1)}%`);
+                    addLog(`   Portfolio: ₹${data.metrics.portfolio_value.toFixed(2)} | Sharpe: ${data.metrics.sharpe_ratio.toFixed(3)}`);
+                } else if (data.status === 'started') {
+                    addLog('✓ Simulation started');
+                } else if (data.status === 'complete') {
+                    addLog('✓ Simulation complete');
+                } else if (data.error) {
+                    addLog('✗ Error: ' + data.error);
+                }
+            };
+        }
+
+        function startTest() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                addLog('✗ Not connected. Reconnecting...');
+                connect();
+                setTimeout(startTest, 1000);
+                return;
+            }
+
+            addLog('Starting simulation...');
+            ws.send(JSON.stringify({
+                command: 'start',
+                start_date: '2024-01-01',
+                end_date: '2024-03-31',
+                balance: 50000
+            }));
+        }
+
+        function stopTest() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ command: 'stop' }));
+                addLog('Stop command sent');
+            }
+        }
+
+        // Auto-connect on load
+        connect();
+    </script>
+</body>
+</html>

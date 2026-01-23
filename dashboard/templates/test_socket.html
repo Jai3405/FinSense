@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <button onclick="startTest()">Start Simulation</button>
+    <div id="log" style="margin-top:20px; font-family:monospace; white-space:pre-wrap;"></div>
+
+    <script>
+        const socket = io();
+        const log = document.getElementById('log');
+
+        function addLog(msg) {
+            log.textContent += new Date().toLocaleTimeString() + ': ' + msg + '\n';
+            console.log(msg);
+        }
+
+        socket.on('connect', function() {
+            document.getElementById('status').textContent = 'Connected';
+            document.getElementById('status').style.color = 'green';
+            addLog('✓ Socket.IO connected');
+        });
+
+        socket.on('disconnect', function() {
+            document.getElementById('status').textContent = 'Disconnected';
+            document.getElementById('status').style.color = 'red';
+            addLog('✗ Socket.IO disconnected');
+        });
+
+        socket.on('trading_update', function(data) {
+            addLog('📊 Trading update received: Step=' + data.step + ', Price=' + data.price + ', Action=' + data.action);
+            addLog('   AI Confidence: BUY=' + (data.action_probs[0]*100).toFixed(1) + '% HOLD=' + (data.action_probs[1]*100).toFixed(1) + '% SELL=' + (data.action_probs[2]*100).toFixed(1) + '%');
+        });
+
+        socket.on('trading_complete', function(data) {
+            addLog('✓ Simulation complete');
+        });
+
+        socket.on('error', function(data) {
+            addLog('✗ Error: ' + data.message);
+        });
+
+        function startTest() {
+            addLog('Starting test simulation...');
+            fetch('/api/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    start_date: '2024-01-01',
+                    end_date: '2024-01-10',
+                    balance: 50000
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addLog('✓ Simulation started successfully');
+                } else {
+                    addLog('✗ Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                addLog('✗ Fetch error: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

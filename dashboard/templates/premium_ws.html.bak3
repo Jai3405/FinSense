@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPIKE Terminal - Enterprise AI Trading Platform</title>
-    <link rel="stylesheet" href="/static/css/premium.css?v=1769142869">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/css/premium.css">
+    <script src="https://cdn."></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23638C82' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='55' fill='%23D3E9D7' font-family='Inter' font-weight='900'>S</text></svg>">
-    <meta name="theme-color" content="#638C82">
-    <meta name="description" content="SPIKE Terminal - Enterprise AI Trading Platform with Real-time Analytics">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 </head>
 <body>
     <!-- Bloomberg-Style Terminal Header -->
@@ -267,44 +265,6 @@
         </aside>
     </div>
 
-    <!-- Loading Overlay with Modern Animation -->
-    <div id="loading-overlay" style="display: none;">
-        <div class="loading-spinner">
-            <div class="spinner-ring"></div>
-            <div class="spinner-text">Initializing Neural Network...</div>
-        </div>
-    </div>
-
-    <!-- Performance Monitor (Dev Mode - Hidden by Default) -->
-    <div id="perf-monitor" style="display: none; position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: var(--success); padding: 15px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; z-index: 10000;">
-        <div>FPS: <span id="perf-fps">60</span></div>
-        <div>Updates: <span id="perf-updates">0</span></div>
-        <div>Avg Time: <span id="perf-avgtime">0</span>ms</div>
-        <div>Memory: <span id="perf-memory">-</span> MB</div>
-    </div>
-
-    <script src="/static/js/premium_ultimate.js?v=1769142869"></script>
-
-    <!-- Enable performance monitor with Shift+P -->
-    <script>
-        document.addEventListener('keydown', (e) => {
-            if (e.shiftKey && e.key === 'P') {
-                const monitor = document.getElementById('perf-monitor');
-                monitor.style.display = monitor.style.display === 'none' ? 'block' : 'none';
-
-                if (monitor.style.display === 'block') {
-                    // Update performance metrics every second
-                    setInterval(() => {
-                        document.getElementById('perf-updates').textContent = performanceMetrics.updateCount;
-                        document.getElementById('perf-avgtime').textContent = performanceMetrics.avgUpdateTime.toFixed(2);
-
-                        if (performance.memory) {
-                            document.getElementById('perf-memory').textContent = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
-                        }
-                    }, 1000);
-                }
-            }
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/premium.js') }}"></script>
 </body>
 </html>
