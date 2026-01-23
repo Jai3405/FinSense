@@ -1,657 +1,816 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPIKE Terminal - AI-Powered Trading System</title>
+    <title>SPIKE Terminal - Enterprise AI Trading Platform</title>
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (v3.4) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#050505',
+                        surface: '#0A0A0A',
+                        surfaceHighlight: '#121212',
+                        border: '#1E1E1E',
+                        primary: '#10B981',      /* Emerald 500 */
+                        primaryGlow: 'rgba(16, 185, 129, 0.15)',
+                        danger: '#EF4444',       /* Red 500 */
+                        dangerGlow: 'rgba(239, 68, 68, 0.15)',
+                        warning: '#F59E0B',      /* Amber 500 */
+                        accent: '#3B82F6',       /* Blue 500 */
+                        textMain: '#EDEDED',
+                        textMuted: '#A1A1AA',
+                        textDim: '#71717A',      /* Zinc 500 */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px -5px var(--tw-shadow-color)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+                        'neon': '0 0 10px rgba(16, 185, 129, 0.4)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    keyframes: {
+                        shimmer: {
+                            '0%': { backgroundPosition: '-1000px 0' },
+                            '100%': { backgroundPosition: '1000px 0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-    <!-- Chart.js 4.4.7 (Latest 2026) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23638C82' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='55' fill='%23D3E9D7' font-family='Inter' font-weight='900'>S</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310B981' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='55' fill='%23050505' font-family='Inter' font-weight='900'>S</text></svg>">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #638C82;
-            --primary-light: #D3E9D7;
-            --primary-dark: #4A6B65;
-            --bg-primary: #0A0E12;
-            --bg-secondary: #111519;
-            --bg-tertiary: #1A1F26;
-            --bg-card: #141920;
-            --bg-elevated: #1E242C;
-            --text-primary: #FFFFFF;
-            --text-secondary: #B8BEC6;
-            --text-tertiary: #7D8590;
-            --text-muted: #4F565E;
-            --success: #3DD68C;
-            --success-glow: rgba(61, 214, 140, 0.2);
-            --danger: #FF4757;
-            --danger-glow: rgba(255, 71, 87, 0.2);
-            --warning: #FFA502;
-            --warning-glow: rgba(255, 165, 2, 0.2);
-            --border-primary: rgba(99, 140, 130, 0.2);
-            --border-secondary: rgba(255, 255, 255, 0.05);
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            background-color: #050505;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #111827 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            color: #EDEDED;
+            overflow: hidden; /* App-like feel */
         }
 
-        /* Grid background effect */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image:
-                linear-gradient(rgba(99, 140, 130, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99, 140, 130, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Header */
-        .terminal-header {
-            background: var(--bg-secondary);
-            border-bottom: 2px solid var(--primary);
-            height: 70px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-        }
-
-        .logo-text h1 {
-            font-size: 36px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-            text-transform: uppercase;
-            transform: skewX(-8deg);
-            font-style: italic;
-            line-height: 1;
-        }
-
-        .logo-subtitle {
-            font-size: 8px;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            font-weight: 600;
-            opacity: 0.7;
-            padding-left: 3px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Metric cards - BIGGER */
-        .metric-card-pro {
-            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
-            border: 1px solid var(--border-primary);
-            border-radius: 12px;
-            padding: 24px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .metric-card-pro::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .metric-card-pro:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 32px rgba(99, 140, 130, 0.3);
-            border-color: var(--primary);
-        }
-
-        .metric-card-pro:hover::before {
-            opacity: 1;
-        }
-
-        /* Charts & Panels */
-        .chart-panel {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-        }
-
-        .control-panel {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-            overflow-y: auto;
-        }
-
-        .control-panel::-webkit-scrollbar {
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
             width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0A; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272A; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3F3F46; 
         }
 
-        .control-panel::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-            border-radius: 10px;
+        /* Utility Classes for Glassmorphism */
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        .control-panel::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
+        /* Glow effects */
+        .glow-text-green {
+            text-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+        }
+        .glow-text-red {
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
         }
 
-        /* Buttons */
-        .btn-terminal {
-            padding: 16px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 700;
+        /* Loader */
+        .loader {
+            border-top-color: #10B981;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Dark mode inputs */
+        input[type="date"] {
+            color-scheme: dark;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            perspective: 1000px;
             cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            position: relative;
-            overflow: hidden;
         }
-
-        .btn-terminal::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+        .flip-card-inner {
+            position: relative;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
         }
-
-        .btn-terminal:hover::before {
-            left: 100%;
+        .flip-card-inner.flipped {
+            transform: rotateY(180deg);
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(99, 140, 130, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 140, 130, 0.4);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-elevated);
-            border-color: var(--primary);
-        }
-
-        /* Activity feed - FIXED HEIGHT */
-        .activity-feed {
-            height: 320px;
-            overflow-y: auto;
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.5rem;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            justify-content: center;
         }
-
-        .activity-feed::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .activity-feed::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-            border-radius: 10px;
-        }
-
-        .activity-feed::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-
-        .activity-item {
-            background: var(--bg-primary);
-            border-left: 3px solid;
-            border-radius: 8px;
-            padding: 15px;
-            animation: slideInRight 0.3s ease-out;
-            flex-shrink: 0;
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .activity-item.buy {
-            border-color: var(--success);
-            background: linear-gradient(90deg, var(--success-glow) 0%, var(--bg-primary) 100%);
-        }
-
-        .activity-item.sell {
-            border-color: var(--danger);
-            background: linear-gradient(90deg, var(--danger-glow) 0%, var(--bg-primary) 100%);
-        }
-
-        /* Confidence bars */
-        .confidence-bar {
-            height: 10px;
-            background: var(--bg-primary);
-            border-radius: 5px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .confidence-fill {
-            height: 100%;
-            transition: width 0.5s ease-out;
-            position: relative;
-        }
-
-        .confidence-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .confidence-fill.buy {
-            background: linear-gradient(90deg, var(--success) 0%, #26A69A 100%);
-            box-shadow: 0 0 10px var(--success-glow);
-        }
-
-        .confidence-fill.hold {
-            background: linear-gradient(90deg, var(--warning) 0%, #FF8C00 100%);
-            box-shadow: 0 0 10px var(--warning-glow);
-        }
-
-        .confidence-fill.sell {
-            background: linear-gradient(90deg, var(--danger) 0%, #EF5350 100%);
-            box-shadow: 0 0 10px var(--danger-glow);
-        }
-
-        /* Status dot pulse */
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--text-muted);
-            animation: pulse-status 2s infinite;
-        }
-
-        .status-dot.active {
-            background: var(--success);
-            box-shadow: 0 0 10px var(--success-glow);
-        }
-
-        @keyframes pulse-status {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Loading overlay */
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--bg-elevated);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Input styles */
-        .control-input {
-            width: 100%;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-primary);
-            border-radius: 8px;
-            padding: 12px 15px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: 'JetBrains Mono', monospace;
-            transition: all 0.3s;
-        }
-
-        .control-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 140, 130, 0.1);
-        }
-
-        /* Panel title */
-        .panel-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary-light);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .panel-title::before {
-            content: '';
-            width: 3px;
-            height: 14px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 2px;
+        .flip-card-back {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #A1A1AA;
+            transform: rotateY(180deg);
+            padding: 0.5rem;
+            font-size: 0.7rem;
+            line-height: 1.2;
+            border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
-<body>
-    <!-- HEADER -->
-    <div class="terminal-header flex items-center justify-between px-8">
-        <!-- Logo -->
+<body class="h-screen flex flex-col font-sans antialiased selection:bg-primary selection:text-white">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="h-16 border-b border-white/5 bg-[#050505]/80 backdrop-blur-md flex items-center justify-between px-8 z-50 sticky top-0">
+        <!-- Logo Section -->
         <div class="flex items-center gap-4">
-            <div class="logo-text">
-                <h1>SPIKE</h1>
-                <div class="logo-subtitle">TERMINAL</div>
+            <div class="flex flex-col">
+                <h1 style="
+                    font-size: 36px;
+                    font-weight: 900;
+                    background: linear-gradient(135deg, #638C82 0%, #4A6B65 100%);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    letter-spacing: -1px;
+                    text-transform: uppercase;
+                    transform: skewX(-8deg);
+                    font-style: italic;
+                    line-height: 1;
+                    font-family: 'Inter', sans-serif;
+                ">SPIKE</h1>
+                <span style="
+                    font-size: 8px;
+                    color: #7D8590;
+                    text-transform: uppercase;
+                    letter-spacing: 5px;
+                    font-weight: 600;
+                    opacity: 0.7;
+                    padding-left: 3px;
+                    font-family: 'JetBrains Mono', monospace;
+                ">TERMINAL</span>
             </div>
         </div>
 
-        <!-- Ticker -->
-        <div class="flex items-center gap-8 font-mono text-sm">
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 uppercase tracking-wider">RELIANCE.NS</span>
-                <span class="text-base font-bold text-white" id="live-price">₹0.00</span>
+        <!-- Ticker Tape -->
+        <div class="hidden md:flex items-center gap-10">
+            <div class="flex flex-col items-end group">
+                <span class="text-xs text-textDim uppercase font-bold tracking-wider mb-1 group-hover:text-textMuted transition-colors">Market</span>
+                <span class="text-base font-mono text-textMuted group-hover:text-white transition-colors">RELIANCE.NS</span>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 uppercase tracking-wider">PORTFOLIO</span>
-                <span class="text-base font-bold text-white" id="live-portfolio">₹50,000</span>
+            <div class="h-10 w-px bg-white/10"></div>
+            <div class="flex flex-col items-end">
+                <span class="text-xs text-textDim uppercase font-bold tracking-wider mb-1">Live Price</span>
+                <span id="live-price" class="text-base font-mono font-bold text-white transition-colors duration-300">₹0.00</span>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 uppercase tracking-wider">P&L</span>
-                <span class="text-base font-bold" id="live-pnl">+₹0</span>
+            <div class="h-10 w-px bg-white/10"></div>
+            <div class="flex flex-col items-end">
+                <span class="text-xs text-textDim uppercase font-bold tracking-wider mb-1">Portfolio</span>
+                <span id="live-portfolio" class="text-base font-mono font-bold text-white glow-text-green transition-all duration-300">₹50,000</span>
             </div>
-        </div>
-
-        <!-- Status -->
-        <div class="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-800 border border-gray-700">
-            <div class="status-dot" id="system-status"></div>
-            <span class="text-sm font-semibold text-gray-400" id="status-label">System Idle</span>
-        </div>
-    </div>
-
-    <!-- MAIN GRID LAYOUT -->
-    <div class="grid grid-cols-[350px_1fr_400px] gap-4 p-4 h-[calc(100vh-70px)]">
-        <!-- LEFT SIDEBAR - CONTROL PANEL -->
-        <div class="control-panel flex flex-col gap-5">
-            <!-- Simulation Controls -->
-            <div>
-                <div class="panel-title">Simulation Controls</div>
-
-                <div class="mb-4">
-                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-2 font-semibold">Start Date</label>
-                    <input type="date" id="start-date" class="control-input" value="2024-01-01">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-2 font-semibold">End Date</label>
-                    <input type="date" id="end-date" class="control-input" value="2024-03-31">
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-2 font-semibold">Initial Capital (₹)</label>
-                    <input type="number" id="capital" class="control-input" value="50000">
-                </div>
-
-                <div class="flex gap-3">
-                    <button id="start-btn" onclick="startTrading()" class="btn-terminal btn-primary flex-1">▶ START</button>
-                    <button id="stop-btn" onclick="stopTrading()" class="btn-terminal btn-secondary flex-1" disabled>■ STOP</button>
-                </div>
-            </div>
-
-            <!-- Market Statistics -->
-            <div class="pt-4 border-t border-gray-800">
-                <div class="panel-title">Market Statistics</div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500 font-semibold">Simulation Step</span>
-                        <span class="text-sm font-bold text-white font-mono" id="current-step">0</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500 font-semibold">Cash Balance</span>
-                        <span class="text-sm font-bold text-white font-mono" id="cash-balance">₹50,000</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500 font-semibold">Shares Held</span>
-                        <span class="text-sm font-bold text-white font-mono" id="shares-held">0</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span class="text-xs text-gray-500 font-semibold">Position Value</span>
-                        <span class="text-sm font-bold text-white font-mono" id="position-value">₹0</span>
-                    </div>
-                    <div class="flex justify-between items-center py-2">
-                        <span class="text-xs text-gray-500 font-semibold">Total Trades</span>
-                        <span class="text-sm font-bold text-white font-mono" id="total-trades">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Data Export -->
-            <div class="pt-4 border-t border-gray-800">
-                <div class="panel-title">Data Export</div>
-                <button onclick="exportTradesCSV()" class="btn-terminal btn-secondary w-full">Export CSV</button>
+            <div class="h-10 w-px bg-white/10"></div>
+            <div class="flex flex-col items-end">
+                <span class="text-xs text-textDim uppercase font-bold tracking-wider mb-1">P&L</span>
+                <span id="live-pnl" class="text-base font-mono font-bold text-emerald-400 transition-colors duration-300">+₹0</span>
             </div>
         </div>
 
-        <!-- CENTER AREA -->
-        <div class="grid grid-rows-[auto_1fr] gap-4">
-            <!-- TOP ROW - 4 METRIC CARDS -->
+        <!-- System Status -->
+        <div class="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-full hover:bg-white/10 transition-colors">
+            <div id="system-status" class="w-2.5 h-2.5 rounded-full bg-zinc-600 transition-colors duration-300 shadow-glow"></div>
+            <span id="status-label" class="text-sm font-medium text-textMuted">System Idle</span>
+        </div>
+    </header>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <!-- Reduced global padding (p-4 vs p-6) and gap (gap-4 vs gap-6) for tighter feel -->
+    <main class="flex-1 overflow-hidden p-4 grid grid-cols-12 gap-4">
+        
+        <!-- LEFT COLUMN: CONTROLS & STATS (Span 3) -->
+        <aside class="col-span-12 lg:col-span-3 flex flex-col gap-4 overflow-hidden h-full">
+            
+            <!-- Control Panel (30%) -->
+            <div class="glass-panel rounded-xl p-5 flex flex-col gap-4 h-[30%] overflow-hidden">
+                <div class="flex items-center gap-3 pb-2 border-b border-white/5 shrink-0">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-widest">Simulation Config</h2>
+                </div>
+
+                <div class="flex flex-col gap-4 flex-1 justify-center">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="group relative">
+                            <label class="block text-[10px] text-textMuted font-bold mb-1.5 uppercase tracking-wide">Start Date</label>
+                            <div class="relative flex items-center">
+                                <svg class="w-3.5 h-3.5 absolute left-3 text-textDim" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <input type="date" id="start-date" value="2024-01-01" class="w-full bg-[#0F0F0F] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-white font-mono focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all hover:border-white/20 cursor-pointer">
+                            </div>
+                        </div>
+                        <div class="group relative">
+                            <label class="block text-[10px] text-textMuted font-bold mb-1.5 uppercase tracking-wide">End Date</label>
+                            <div class="relative flex items-center">
+                                <svg class="w-3.5 h-3.5 absolute left-3 text-textDim" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <input type="date" id="end-date" value="2024-03-31" class="w-full bg-[#0F0F0F] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-white font-mono focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all hover:border-white/20 cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="group relative">
+                        <label class="block text-[10px] text-textMuted font-bold mb-1.5 uppercase tracking-wide">Initial Capital</label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-3 text-emerald-500 font-mono text-sm font-bold">₹</span>
+                            <input type="number" id="capital" value="50000" class="w-full bg-[#0F0F0F] border border-white/10 rounded-lg pl-8 pr-3 py-2.5 text-sm text-white font-mono font-bold focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all hover:border-white/20 shadow-inner">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-2">
+                        <button id="start-btn" onclick="startTrading()" class="flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white py-5 rounded-xl text-base font-bold transition-all shadow-lg hover:shadow-neon active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group border border-emerald-500/50">
+                            <svg class="w-5 h-5 fill-white group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <span class="tracking-wider">EXECUTE</span>
+                        </button>
+                        <button id="stop-btn" onclick="stopTrading()" disabled class="flex items-center justify-center gap-3 bg-[#1A1A1A] hover:bg-[#252525] border border-white/10 text-textMuted hover:text-white py-5 rounded-xl text-base font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group">
+                            <svg class="w-5 h-5 fill-current group-hover:text-red-500 transition-colors" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+                            <span class="tracking-wider">HALT</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Stats (40%) -->
+            <div class="glass-panel rounded-xl p-5 flex flex-col h-[40%]">
+                <div class="flex items-center gap-3 pb-3 mb-2 border-b border-white/5 shrink-0">
+                    <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-widest">Live Metrics</h2>
+                </div>
+                
+                <div class="flex-1 flex flex-col gap-3 justify-center">
+                    <!-- Top Row: Financials -->
+                    <div class="grid grid-cols-2 gap-3 h-1/2">
+                        <!-- Cash Card -->
+                        <div class="flip-card">
+                            <div class="flip-card-inner bg-white/[0.03] rounded-lg border border-white/5 hover:border-emerald-500/30 transition-colors" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-front p-3 flex flex-col justify-between items-start">
+                                    <span class="text-[10px] font-bold text-textMuted uppercase tracking-wider">Available Cash</span>
+                                    <span id="cash-balance" class="font-mono text-white text-xl font-bold tracking-tight">₹50,000</span>
+                                </div>
+                                <div class="flip-card-back">
+                                    <span class="font-bold text-emerald-500 mb-1">LIQUIDITY</span>
+                                    Total cash available to deploy for new positions.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pos Value Card -->
+                        <div class="flip-card">
+                            <div class="flip-card-inner bg-white/[0.03] rounded-lg border border-white/5 hover:border-accent/30 transition-colors" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-front p-3 flex flex-col justify-between items-start">
+                                    <span class="text-[10px] font-bold text-textMuted uppercase tracking-wider">Pos Value</span>
+                                    <span id="position-value" class="font-mono text-white text-xl font-bold tracking-tight">₹0</span>
+                                </div>
+                                <div class="flip-card-back">
+                                    <span class="font-bold text-accent mb-1">EXPOSURE</span>
+                                    Current market value of all active holdings.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row: Stats -->
+                    <div class="grid grid-cols-3 gap-3 h-1/2">
+                        <!-- Step Card -->
+                        <div class="flip-card">
+                            <div class="flip-card-inner bg-white/[0.03] rounded-lg border border-white/5" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-front p-2 flex flex-col items-center justify-center">
+                                    <span class="text-[9px] font-bold text-textDim uppercase tracking-wide mb-1">Step</span>
+                                    <span id="current-step" class="font-mono text-white text-lg font-bold">0</span>
+                                </div>
+                                <div class="flip-card-back">
+                                    TIME
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Holdings Card -->
+                        <div class="flip-card">
+                            <div class="flip-card-inner bg-white/[0.03] rounded-lg border border-white/5" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-front p-2 flex flex-col items-center justify-center">
+                                    <span class="text-[9px] font-bold text-textDim uppercase tracking-wide mb-1">Holdings</span>
+                                    <span id="shares-held" class="font-mono text-white text-lg font-bold">0</span>
+                                </div>
+                                <div class="flip-card-back">
+                                    SHARES
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trades Card -->
+                        <div class="flip-card">
+                            <div class="flip-card-inner bg-white/[0.03] rounded-lg border border-white/5" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-front p-2 flex flex-col items-center justify-center">
+                                    <span class="text-[9px] font-bold text-textDim uppercase tracking-wide mb-1">Trades</span>
+                                    <span id="total-trades" class="font-mono text-accent text-lg font-black">0</span>
+                                </div>
+                                <div class="flip-card-back">
+                                    COUNT
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-3 border-t border-white/5 shrink-0">
+                    <button onclick="exportTradesCSV()" class="w-full flex items-center justify-center gap-2 text-xs text-textMuted hover:text-white transition-colors uppercase tracking-widest font-bold py-3 hover:bg-white/5 rounded-lg group border border-transparent hover:border-white/10">
+                        <svg class="w-4 h-4 group-hover:translate-y-[-2px] transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export Trade Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Agent Action (30%) -->
+            <div class="glass-panel rounded-xl p-5 h-[30%] flex flex-col">
+                <div class="flex justify-between items-center mb-2 shrink-0">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Live Agent Action
+                    </h3>
+                </div>
+                <div class="flex-grow w-full relative">
+                    <canvas id="actions-chart"></canvas>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER COLUMN: VISUALIZATIONS (Span 6) -->
+        <section class="col-span-12 lg:col-span-6 flex flex-col gap-4 h-full">
+            
+            <!-- Top Metrics Row -->
             <div class="grid grid-cols-4 gap-4">
-                <!-- Portfolio Value -->
-                <div class="metric-card-pro">
-                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Portfolio Value</div>
-                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-portfolio">₹50,000</div>
-                    <div class="text-sm font-bold" id="metric-portfolio-change">
-                        <span class="text-green-400">+0.00%</span>
+                <!-- Portfolio Card -->
+                <div class="glass-panel rounded-xl p-5 relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500 opacity-50"></div>
+                    <span class="block text-xs text-textMuted uppercase font-bold tracking-wider mb-2">Net Worth</span>
+                    <div id="metric-portfolio" class="text-3xl font-black text-white font-mono tracking-tight group-hover:glow-text-green transition-all">₹50,000</div>
+                    <div id="metric-portfolio-change" class="text-xs font-bold mt-2 text-emerald-400 flex items-center gap-1 bg-emerald-500/10 w-fit px-2 py-1 rounded">
+                        <span>+0.00%</span>
                     </div>
                 </div>
 
-                <!-- Sharpe Ratio -->
-                <div class="metric-card-pro">
-                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Sharpe Ratio</div>
-                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-sharpe">4.235</div>
-                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">Risk-Adjusted Return</div>
+                <!-- Sharpe Card -->
+                <div class="glass-panel rounded-xl p-5 border-l-4 border-l-blue-500/50 hover:bg-white/[0.02] transition-colors">
+                    <span class="block text-xs text-textMuted uppercase font-bold tracking-wider mb-2">Sharpe Ratio</span>
+                    <div id="metric-sharpe" class="text-3xl font-black text-white font-mono tracking-tight">0.00</div>
+                    <span class="text-xs text-textDim mt-2 block font-medium">Risk Adjusted</span>
                 </div>
 
-                <!-- Win Rate -->
-                <div class="metric-card-pro">
-                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Win Rate</div>
-                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-winrate">66.7%</div>
-                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">Profitable Trades</div>
+                <!-- Win Rate Card -->
+                <div class="glass-panel rounded-xl p-5 border-l-4 border-l-amber-500/50 hover:bg-white/[0.02] transition-colors">
+                    <span class="block text-xs text-textMuted uppercase font-bold tracking-wider mb-2">Win Rate</span>
+                    <div id="metric-winrate" class="text-3xl font-black text-white font-mono tracking-tight">0.0%</div>
+                    <span class="text-xs text-textDim mt-2 block font-medium">Profitability</span>
                 </div>
 
-                <!-- Max Drawdown -->
-                <div class="metric-card-pro">
-                    <div class="text-[11px] text-gray-500 uppercase tracking-wide mb-2 font-semibold">Max Drawdown</div>
-                    <div class="text-[28px] font-black text-white mb-2 font-mono leading-none" id="metric-drawdown">0.55%</div>
-                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wide">Peak-to-Trough</div>
+                <!-- Drawdown Card -->
+                <div class="glass-panel rounded-xl p-5 border-l-4 border-l-red-500/50 hover:bg-white/[0.02] transition-colors">
+                    <span class="block text-xs text-textMuted uppercase font-bold tracking-wider mb-2">Drawdown</span>
+                    <div id="metric-drawdown" class="text-3xl font-black text-white font-mono tracking-tight">0.0%</div>
+                    <span class="text-xs text-textDim mt-2 block font-medium">Max Loss</span>
+                </div>
+            </div>
+
+            <!-- Equity Chart (Large) -->
+            <div class="glass-panel rounded-xl p-6 flex-grow relative flex flex-col min-h-[500px]">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        Equity Curve
+                    </h3>
+                    <div class="flex gap-2 items-center bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                        <span class="w-2 h-2 rounded-full border border-emerald-500/50 bg-emerald-500/20"></span>
+                        <span class="text-xs text-textMuted font-bold uppercase">Real-time</span>
+                    </div>
+                </div>
+                <div class="flex-grow w-full relative">
+                    <canvas id="equity-chart"></canvas>
                 </div>
             </div>
 
-            <!-- BOTTOM - CHARTS -->
-            <div class="grid grid-cols-[2fr_1fr] gap-4">
-                <!-- Portfolio Equity Curve -->
-                <div class="chart-panel">
-                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
-                        <div class="text-base font-bold text-green-300">📈 Portfolio Equity Curve</div>
-                        <div class="text-xs text-gray-500">Real-time Performance</div>
-                    </div>
-                    <div style="height: calc(100% - 60px);">
-                        <canvas id="equity-chart"></canvas>
-                    </div>
+        </section>
+
+                <!-- RIGHT COLUMN: ACTIVITY & AI (Span 3) -->
+
+                <aside class="col-span-12 lg:col-span-3 flex flex-col gap-4 h-full overflow-hidden">
+
+                    
+
+            <!-- Activity Log -->
+            <div class="glass-panel rounded-xl flex-none flex flex-col overflow-hidden h-[45%]">
+                <div class="p-5 border-b border-white/5 flex items-center gap-3 bg-[#0A0A0A]/50 shrink-0">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    <h3 class="text-sm font-bold text-white uppercase tracking-widest flex-1">Activity Log</h3>
+                    <span id="activity-count" class="bg-white/10 text-white text-xs px-2.5 py-0.5 rounded font-mono font-bold">0</span>
                 </div>
-
-                <!-- Agent Actions -->
-                <div class="chart-panel">
-                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
-                        <div class="text-base font-bold text-green-300">🎯 Agent Actions</div>
-                    </div>
-                    <div style="height: calc(100% - 60px);">
-                        <canvas id="actions-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT SIDEBAR - FIXED HEIGHT SECTIONS -->
-        <div class="control-panel grid grid-rows-[auto_320px_auto_1fr] gap-4">
-            <!-- Live Activity Header -->
-            <div class="flex justify-between items-center pb-3 border-b border-gray-800">
-                <div class="panel-title !mb-0">Live Activity</div>
-                <div class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold" id="activity-count">0</div>
-            </div>
-
-            <!-- Live Activity Feed - FIXED 320px HEIGHT -->
-            <div class="activity-feed" id="activity-feed">
-                <!-- Activity items will be added here dynamically -->
-            </div>
-
-            <!-- AI Confidence -->
-            <div class="pt-4 border-t border-gray-800">
-                <div class="panel-title">AI Confidence</div>
-                <div class="space-y-3">
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide font-bold">BUY</span>
-                            <span class="text-sm font-bold text-white font-mono" id="conf-buy-val">33.3%</span>
-                        </div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill buy" id="conf-buy" style="width: 33.3%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide font-bold">HOLD</span>
-                            <span class="text-sm font-bold text-white font-mono" id="conf-hold-val">33.3%</span>
-                        </div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill hold" id="conf-hold" style="width: 33.3%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-gray-400 uppercase tracking-wide font-bold">SELL</span>
-                            <span class="text-sm font-bold text-white font-mono" id="conf-sell-val">33.3%</span>
-                        </div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill sell" id="conf-sell" style="width: 33.3%"></div>
-                        </div>
+                <div id="activity-feed" class="flex-grow overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+                    <!-- Dynamic Content -->
+                    <div class="text-center text-textDim text-sm py-8 italic">
+                        Ready to trade...
                     </div>
                 </div>
             </div>
 
-            <!-- Current Position -->
-            <div class="pt-4 border-t border-gray-800">
-                <div class="panel-title">Current Position</div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Stock</div>
-                        <div class="text-white font-bold text-sm" id="pos-stock">RELIANCE.NS</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Price</div>
-                        <div class="text-white font-bold text-sm font-mono" id="pos-price">₹1,474.93</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Inventory</div>
-                        <div class="text-white font-bold text-sm font-mono" id="pos-inventory">0</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Avg Cost</div>
-                        <div class="text-white font-bold text-sm font-mono" id="pos-avgcost">₹1,468.69</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Unrealized P&L</div>
-                        <div class="text-green-400 font-bold text-sm" id="pos-unrealized">+₹210.09</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-gray-500 mb-1 uppercase tracking-wide font-semibold">Realized P&L</div>
-                        <div class="text-green-400 font-bold text-sm" id="pos-realized">+₹13.00</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        
+
+                                <!-- AI Confidence -->
+
+        
+
+                                <div class="glass-panel rounded-xl p-5 flex flex-col h-[27.5%]">
+
+        
+
+                                    <div class="flex items-center gap-3 pb-4 border-b border-white/5 mb-2 shrink-0">
+
+        
+
+                                        <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+
+        
+
+                                        <h2 class="text-sm font-bold text-white uppercase tracking-widest">AI Confidence</h2>
+
+        
+
+                                    </div>
+
+        
+
+                    
+
+        
+
+                                    <div class="space-y-4 flex-1 overflow-y-auto pr-1 flex flex-col justify-center">
+
+        
+
+                                        <!-- Buy -->
+
+        
+
+                                        <div>
+
+        
+
+                                            <div class="flex justify-between items-end mb-1.5">
+
+        
+
+                                                <span class="text-xs font-bold text-emerald-500 uppercase tracking-wide">BUY</span>
+
+        
+
+                                                <span id="conf-buy-val" class="text-base font-mono text-white font-bold">0.0%</span>
+
+        
+
+                                            </div>
+
+        
+
+                                            <div class="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+
+        
+
+                                                <div id="conf-buy" class="h-full bg-emerald-500 rounded-full w-0 transition-all duration-300 shadow-[0_0_15px_rgba(16,185,129,0.4)]"></div>
+
+        
+
+                                            </div>
+
+        
+
+                                        </div>
+
+        
+
+                                        <!-- Hold -->
+
+        
+
+                                        <div>
+
+        
+
+                                            <div class="flex justify-between items-end mb-1.5">
+
+        
+
+                                                <span class="text-xs font-bold text-amber-500 uppercase tracking-wide">HOLD</span>
+
+        
+
+                                                <span id="conf-hold-val" class="text-base font-mono text-white font-bold">0.0%</span>
+
+        
+
+                                            </div>
+
+        
+
+                                            <div class="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+
+        
+
+                                                <div id="conf-hold" class="h-full bg-amber-500 rounded-full w-0 transition-all duration-300 shadow-[0_0_15px_rgba(245,158,11,0.4)]"></div>
+
+        
+
+                                            </div>
+
+        
+
+                                        </div>
+
+        
+
+                                        <!-- Sell -->
+
+        
+
+                                        <div>
+
+        
+
+                                            <div class="flex justify-between items-end mb-1.5">
+
+        
+
+                                                <span class="text-xs font-bold text-red-500 uppercase tracking-wide">SELL</span>
+
+        
+
+                                                <span id="conf-sell-val" class="text-base font-mono text-white font-bold">0.0%</span>
+
+        
+
+                                            </div>
+
+        
+
+                                            <div class="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+
+        
+
+                                                <div id="conf-sell" class="h-full bg-red-500 rounded-full w-0 transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.4)]"></div>
+
+        
+
+                                            </div>
+
+        
+
+                                        </div>
+
+        
+
+                                    </div>
+
+        
+
+                                </div>
+
+        
+
+                    
+
+        
+
+                                            <!-- Position Detail (27.5%) -->
+
+        
+
+                    
+
+        
+
+                                            <div class="glass-panel rounded-xl p-5 h-[27.5%] flex flex-col">
+
+        
+
+                    
+
+        
+
+                                                <div class="flex justify-between items-center mb-4 shrink-0">
+
+        
+
+                    
+
+        
+
+                                                     <div class="flex items-center gap-3">
+
+        
+
+                    
+
+        
+
+                                                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+
+        
+
+                    
+
+        
+
+                                                        <h3 class="text-sm font-bold text-white uppercase tracking-widest">Active Position</h3>
+
+        
+
+                    
+
+        
+
+                                                     </div>
+
+        
+
+                    
+
+        
+
+                                                     <span id="pos-stock" class="text-xs font-mono text-textMuted bg-white/5 px-2.5 py-1 rounded border border-white/5 font-bold">RELIANCE.NS</span>
+
+        
+
+                    
+
+        
+
+                                                </div>
+
+        
+
+                                    
+
+        
+
+                                    <div class="grid grid-cols-2 gap-y-4 gap-x-4 flex-1 content-center">
+
+        
+
+                                        <div>
+
+        
+
+                                            <div class="text-[10px] text-textMuted font-bold uppercase tracking-wide mb-1">Avg Price</div>
+
+        
+
+                                            <div id="pos-avgcost" class="text-base font-mono text-white font-bold">₹0.00</div>
+
+        
+
+                                        </div>
+
+        
+
+                                        <div class="text-right">
+
+        
+
+                                            <div class="text-[10px] text-textMuted font-bold uppercase tracking-wide mb-1">Current</div>
+
+        
+
+                                            <div id="pos-price" class="text-2xl font-mono text-white font-black tracking-tight">₹0.00</div>
+
+        
+
+                                        </div>
+
+        
+
+                                        <div class="col-span-2 border-t border-white/5 pt-3 flex justify-between items-end">
+
+        
+
+                                            <div>
+
+        
+
+                                                <div class="text-[10px] text-textMuted font-bold uppercase tracking-wide mb-1">Unrealized P&L</div>
+
+        
+
+                                                <div id="pos-unrealized" class="text-2xl font-mono font-black text-emerald-400 tracking-tight">₹0.00</div>
+
+        
+
+                                            </div>
+
+        
+
+                                            <div class="text-right">
+
+        
+
+                                                 <div class="text-[10px] text-textMuted font-bold uppercase tracking-wide mb-1">Realized</div>
+
+        
+
+                                                 <div id="pos-realized" class="text-sm font-mono text-emerald-400 font-bold">₹0.00</div>
+
+        
+
+                                            </div>
+
+        
+
+                                        </div>
+
+        
+
+                                         <!-- Added visible inventory for completeness -->
+
+        
+
+                                        <div class="col-span-2 border-t border-white/5 pt-3 flex justify-between items-center">
+
+        
+
+                                             <div class="text-[10px] text-textMuted font-bold uppercase tracking-wide">Inventory</div>
+
+        
+
+                                             <div id="pos-inventory" class="text-base font-mono text-white font-bold">0</div>
+
+        
+
+                                        </div>
+
+        
+
+                                    </div>
+
+        
+
+                                </div>
+
+                </aside>
+
+    </main>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-        <div class="text-center">
-            <div class="spinner mx-auto mb-4"></div>
-            <div class="text-green-400 text-lg font-semibold tracking-wide spinner-text">Initializing Neural Network...</div>
-        </div>
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-[#050505]/90 backdrop-blur-sm flex flex-col items-center justify-center z-[100] transition-opacity duration-300">
+        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-800 h-16 w-16 mb-6"></div>
+        <h2 class="text-2xl font-bold text-white tracking-widest mb-3">INITIALIZING</h2>
+        <p class="text-emerald-500 font-mono text-base animate-pulse spinner-text">Loading Neural Weights...</p>
     </div>
 
-    <!-- JavaScript -->
+    <!-- Import Logic -->
     <script src="/static/js/premium_ultimate.js"></script>
 </body>
 </html>

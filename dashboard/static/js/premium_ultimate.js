@@ -178,7 +178,7 @@ function initCharts() {
         }
     });
 
-    // 2. Actions Chart with 3D effect
+    // 2. Live Agent Action Chart (Vertical Bar)
     const actionsCtx = document.getElementById('actions-chart').getContext('2d');
 
     actionsChart = new Chart(actionsCtx, {
@@ -186,74 +186,60 @@ function initCharts() {
         data: {
             labels: ['BUY', 'HOLD', 'SELL'],
             datasets: [{
-                label: 'Actions',
+                label: 'Live Action',
                 data: [0, 0, 0],
                 backgroundColor: [
-                    'rgba(61, 214, 140, 0.9)',
-                    'rgba(255, 165, 2, 0.9)',
-                    'rgba(255, 71, 87, 0.9)'
+                    'rgba(16, 185, 129, 0.8)', // Emerald
+                    'rgba(245, 158, 11, 0.8)', // Amber
+                    'rgba(239, 68, 68, 0.8)'   // Red
                 ],
                 borderColor: [
-                    '#3DD68C',
-                    '#FFA502',
-                    '#FF4757'
+                    '#10B981',
+                    '#F59E0B',
+                    '#EF4444'
                 ],
-                borderWidth: 2,
-                borderRadius: 8,
-                borderSkipped: false
+                borderWidth: 1,
+                borderRadius: 4,
+                barPercentage: 0.95,
+                categoryPercentage: 0.95
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             animation: {
-                duration: 400,
-                easing: 'easeOutBounce'
+                duration: 500,
+                easing: 'easeOutQuart'
             },
             plugins: {
                 legend: {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(10, 14, 18, 0.95)',
-                    titleColor: '#FFFFFF',
-                    bodyColor: '#FFFFFF',
-                    borderColor: '#638C82',
-                    borderWidth: 2,
-                    padding: 12,
-                    titleFont: {
-                        size: 13,
-                        weight: 'bold'
-                    }
+                    backgroundColor: 'rgba(10, 10, 10, 0.95)',
+                    titleColor: '#EDEDED',
+                    bodyColor: '#EDEDED',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    padding: 8,
+                    displayColors: false
                 }
             },
             scales: {
                 x: {
-                    grid: {
-                        display: false
-                    },
+                    grid: { display: false },
                     ticks: {
-                        color: '#B8BEC6',
+                        color: '#A1A1AA',
                         font: {
-                            size: 13,
                             family: 'JetBrains Mono',
-                            weight: '700'
+                            size: 11,
+                            weight: 'bold'
                         }
                     }
                 },
                 y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.02)'
-                    },
-                    ticks: {
-                        color: '#7D8590',
-                        font: {
-                            size: 11,
-                            family: 'JetBrains Mono'
-                        },
-                        stepSize: 1
-                    }
+                    display: false,
+                    grid: { display: false }
                 }
             }
         }
@@ -356,11 +342,14 @@ function resetUI() {
     document.getElementById('stop-btn').disabled = true;
 }
 
+// Active animation tracking
+window.animationFrames = {};
+
 function updateTerminal(data) {
     const metrics = data.metrics;
     const timestamp = new Date(data.timestamp).toLocaleDateString('en-IN');
 
-    // Track history
+    // Track history with limit
     portfolioHistory.push({
         timestamp: data.timestamp,
         price: data.price,
@@ -369,29 +358,45 @@ function updateTerminal(data) {
         pnl: data.trade && data.trade.pnl ? data.trade.pnl : 0
     });
 
+    if (portfolioHistory.length > 5000) {
+        portfolioHistory.shift();
+    }
+
     priceHistory.push({
         time: timestamp,
         price: data.price,
         action: data.action
     });
+    if (priceHistory.length > 5000) priceHistory.shift();
 
     // Update header ticker with animation
-    animateValue('live-price', parseFloat(document.getElementById('live-price').textContent.replace('₹', '')), data.price, '₹');
-    animateValue('live-portfolio', parseFloat(document.getElementById('live-portfolio').textContent.replace(/[₹,]/g, '')), metrics.portfolio_value, '₹', true);
+    const livePriceEl = document.getElementById('live-price');
+    const livePortfolioEl = document.getElementById('live-portfolio');
+    
+    const currentPrice = parseFloat(livePriceEl.textContent.replace(/[^0-9.-]+/g, '')) || 0;
+    const currentPortfolio = parseFloat(livePortfolioEl.textContent.replace(/[^0-9.-]+/g, '')) || 0;
+
+    animateValue('live-price', currentPrice, data.price, true);
+    animateValue('live-portfolio', currentPortfolio, metrics.portfolio_value, true);
 
     const pnl = metrics.portfolio_value - startingBalance;
     const pnlEl = document.getElementById('live-pnl');
     const sign = pnl >= 0 ? '+' : '';
-    pnlEl.textContent = sign + '₹' + pnl.toLocaleString('en-IN', { maximumFractionDigits: 0 });
-    pnlEl.className = 'ticker-value ' + (pnl >= 0 ? 'up' : 'down');
+    pnlEl.textContent = sign + currencyFormatter.format(pnl);
+    pnlEl.className = 'text-base font-mono font-bold ' + (pnl >= 0 ? 'text-emerald-400' : 'text-red-400');
 
     // Update main metrics with flash effect
-    flashUpdate('metric-portfolio', '₹' + metrics.portfolio_value.toLocaleString('en-IN', { maximumFractionDigits: 0 }));
+    flashUpdate('metric-portfolio', currencyFormatter.format(metrics.portfolio_value));
 
     const changeEl = document.getElementById('metric-portfolio-change');
     const changePct = metrics.total_return_pct;
-    changeEl.textContent = (changePct >= 0 ? '▲ +' : '▼ ') + Math.abs(changePct).toFixed(2) + '%';
-    changeEl.className = 'metric-change-pro ' + (changePct >= 0 ? 'positive' : 'negative');
+    const absChange = Math.abs(changePct);
+    const arrow = changePct >= 0 ? '▲' : '▼';
+    
+    // Custom format for pct to match design
+    changeEl.innerHTML = `<span>${arrow} ${absChange.toFixed(2)}%</span>`;
+    changeEl.className = 'text-xs font-bold mt-2 flex items-center gap-1 w-fit px-2 py-1 rounded ' + 
+        (changePct >= 0 ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10');
 
     flashUpdate('metric-sharpe', metrics.sharpe_ratio.toFixed(3));
     flashUpdate('metric-winrate', metrics.win_rate.toFixed(1) + '%');
@@ -399,25 +404,25 @@ function updateTerminal(data) {
 
     // Update control panel
     document.getElementById('current-step').textContent = data.step;
-    document.getElementById('cash-balance').textContent = '₹' + metrics.balance.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    document.getElementById('cash-balance').textContent = currencyFormatter.format(metrics.balance);
     document.getElementById('shares-held').textContent = metrics.inventory;
-    document.getElementById('position-value').textContent = '₹' + (metrics.inventory_value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    document.getElementById('position-value').textContent = currencyFormatter.format(metrics.inventory_value || 0);
     document.getElementById('total-trades').textContent = metrics.total_trades;
 
     // Update position details
-    document.getElementById('pos-price').textContent = '₹' + data.price.toFixed(2);
+    document.getElementById('pos-price').textContent = currencyFormatter.format(data.price);
     document.getElementById('pos-inventory').textContent = metrics.inventory;
-    document.getElementById('pos-avgcost').textContent = '₹' + (metrics.avg_cost || 0).toFixed(2);
+    document.getElementById('pos-avgcost').textContent = currencyFormatter.format(metrics.avg_cost || 0);
 
     const unrealizedPnl = metrics.unrealized_pnl || 0;
     const unrealizedEl = document.getElementById('pos-unrealized');
-    unrealizedEl.textContent = (unrealizedPnl >= 0 ? '+' : '') + '₹' + unrealizedPnl.toFixed(2);
-    unrealizedEl.style.color = unrealizedPnl >= 0 ? 'var(--success)' : 'var(--danger)';
+    unrealizedEl.textContent = (unrealizedPnl >= 0 ? '+' : '') + currencyFormatter.format(unrealizedPnl);
+    unrealizedEl.className = 'text-base font-mono font-bold ' + (unrealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400');
 
     const realizedPnl = (metrics.total_profit || 0) - Math.abs(metrics.total_loss || 0);
     const realizedEl = document.getElementById('pos-realized');
-    realizedEl.textContent = (realizedPnl >= 0 ? '+' : '') + '₹' + realizedPnl.toFixed(2);
-    realizedEl.style.color = realizedPnl >= 0 ? 'var(--success)' : 'var(--danger)';
+    realizedEl.textContent = (realizedPnl >= 0 ? '+' : '') + currencyFormatter.format(realizedPnl);
+    realizedEl.className = 'text-sm font-mono ' + (realizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400');
 
     // Update AI confidence levels with smooth animation
     const probs = data.action_probs;
@@ -456,29 +461,39 @@ function updateTerminal(data) {
     }
 }
 
-function animateValue(elementId, start, end, prefix = '', comma = false) {
+function animateValue(elementId, start, end, isCurrency = false) {
     const element = document.getElementById(elementId);
+    if (!element) return;
+
+    // Cancel existing animation for this element
+    if (window.animationFrames[elementId]) {
+        cancelAnimationFrame(window.animationFrames[elementId]);
+    }
+
     const duration = 500;
     const startTime = performance.now();
 
     function update(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3); // Cubic ease out
 
-        const current = start + (end - start) * easeOutCubic(progress);
+        const current = start + (end - start) * ease;
 
-        if (comma) {
-            element.textContent = prefix + current.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        if (isCurrency) {
+            element.textContent = currencyFormatter.format(current);
         } else {
-            element.textContent = prefix + current.toFixed(2);
+            element.textContent = current.toFixed(2);
         }
 
         if (progress < 1) {
-            requestAnimationFrame(update);
+            window.animationFrames[elementId] = requestAnimationFrame(update);
+        } else {
+            delete window.animationFrames[elementId];
         }
     }
 
-    requestAnimationFrame(update);
+    window.animationFrames[elementId] = requestAnimationFrame(update);
 }
 
 function animateBar(barId, targetPercent) {
@@ -522,28 +537,61 @@ function flashUpdate(elementId, newValue) {
 function addActivity(action, price, pnl, timestamp) {
     const feed = document.getElementById('activity-feed');
     const item = document.createElement('div');
-    item.className = `activity-item ${action.toLowerCase()}`;
+    
+    // Friendly formatting
+    let icon = '';
+    let title = '';
+    let colorClass = '';
+    let details = '';
 
+    const time = new Date(timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const formattedPrice = '₹' + price.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+
+    if (action === 'BUY') {
+        icon = `<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>`;
+        title = 'Acquired Position';
+        colorClass = 'border-l-emerald-500 bg-emerald-500/5';
+        details = `<span class="text-emerald-400 font-bold">Buy @ ${formattedPrice}</span>`;
+    } else if (action === 'SELL') {
+        const isProfit = pnl >= 0;
+        const pnlFormatted = (isProfit ? '+' : '') + '₹' + pnl.toFixed(2);
+        const pnlClass = isProfit ? 'text-emerald-400' : 'text-red-400';
+        
+        icon = `<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        title = isProfit ? 'Profit Realized' : 'Loss Realized';
+        colorClass = 'border-l-red-500 bg-red-500/5';
+        details = `<span class="${pnlClass} font-bold">P&L: ${pnlFormatted}</span> • <span class="text-textDim">@ ${formattedPrice}</span>`;
+    } else {
+        icon = `<svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        title = 'Position Held';
+        colorClass = 'border-l-amber-500 bg-amber-500/5';
+        details = `<span class="text-textDim">Holding @ ${formattedPrice}</span>`;
+    }
+
+    item.className = `flex items-start gap-3 p-3 rounded-lg border-l-2 ${colorClass} mb-2 transition-all duration-300 transform translate-x-2 opacity-0`;
+    
     item.innerHTML = `
-        <div class="activity-time">${new Date(timestamp).toLocaleTimeString('en-IN')}</div>
-        <div class="activity-content">
-            <span class="activity-action">${action} @ ₹${price.toFixed(2)}</span>
-            ${action === 'SELL' ? `<span class="activity-pnl ${pnl >= 0 ? 'positive' : 'negative'}">
-                ${pnl >= 0 ? '+' : ''}₹${pnl.toFixed(2)}
-            </span>` : ''}
+        <div class="mt-0.5 shrink-0 bg-white/5 p-1.5 rounded-full border border-white/5">
+            ${icon}
+        </div>
+        <div class="flex-grow min-w-0">
+            <div class="flex justify-between items-start">
+                <span class="text-xs font-bold text-white tracking-wide">${title}</span>
+                <span class="text-[10px] text-textDim font-mono">${time}</span>
+            </div>
+            <div class="text-xs font-mono mt-0.5 truncate">
+                ${details}
+            </div>
         </div>
     `;
 
     feed.insertBefore(item, feed.firstChild);
 
     // Entrance animation
-    item.style.opacity = '0';
-    item.style.transform = 'translateX(20px)';
-    setTimeout(() => {
-        item.style.transition = 'all 0.3s ease-out';
+    requestAnimationFrame(() => {
         item.style.opacity = '1';
         item.style.transform = 'translateX(0)';
-    }, 10);
+    });
 
     activityCount++;
     document.getElementById('activity-count').textContent = activityCount;
