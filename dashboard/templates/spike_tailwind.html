@@ -3,94 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPIKE Terminal - Enterprise AI Trading Platform</title>
+    <title>SPIKE Terminal - AI-Powered Trading System</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js 4.4.7 (Latest 2026) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23638C82' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='55' fill='%23D3E9D7' font-family='Inter' font-weight='900'>S</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23638C82' width='100' height='100'/><text y='70' x='50' text-anchor='middle' font-size='55' fill='%23D3E9D7' font-family='Inter' font-weight='900'>S</text></svg>">
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #638C82;
+            --primary-light: #D3E9D7;
+            --primary-dark: #4A6B65;
+            --bg-primary: #0A0E12;
+            --bg-secondary: #111519;
+            --bg-tertiary: #1A1F26;
+            --bg-card: #141920;
+            --bg-elevated: #1E242C;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B8BEC6;
+            --text-tertiary: #7D8590;
+            --text-muted: #4F565E;
+            --success: #3DD68C;
+            --success-glow: rgba(61, 214, 140, 0.2);
+            --danger: #FF4757;
+            --danger-glow: rgba(255, 71, 87, 0.2);
+            --warning: #FFA502;
+            --warning-glow: rgba(255, 165, 2, 0.2);
+            --border-primary: rgba(99, 140, 130, 0.2);
+            --border-secondary: rgba(255, 255, 255, 0.05);
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0A0E12;
-            background-image:
-                linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
-
-        /* Gradient backgrounds matching the screenshot */
-        .gradient-card {
-            background: linear-gradient(135deg, #141920 0%, #1E242C 100%);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .gradient-primary {
-            background: linear-gradient(135deg, #638C82 0%, #4A6B65 100%);
-        }
-
-        /* Metric cards with glow effect */
-        .metric-card {
-            background: linear-gradient(135deg, #141920 0%, #1E242C 100%);
-            border: 1px solid #2A3441;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
             position: relative;
+        }
+
+        /* Grid background effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(99, 140, 130, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 140, 130, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Header */
+        .terminal-header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--primary);
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        .logo-text h1 {
+            font-size: 36px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            transform: skewX(-8deg);
+            font-style: italic;
+            line-height: 1;
+        }
+
+        .logo-subtitle {
+            font-size: 8px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-weight: 600;
+            opacity: 0.7;
+            padding-left: 3px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Metric cards */
+        .metric-card-pro {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .metric-card::before {
+        .metric-card-pro::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #638C82 0%, #3DD68C 100%);
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
             opacity: 0;
             transition: opacity 0.3s;
         }
 
-        .metric-card:hover {
-            border-color: #638C82;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(99, 140, 130, 0.2);
+        .metric-card-pro:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 32px rgba(99, 140, 130, 0.3);
+            border-color: var(--primary);
         }
 
-        .metric-card:hover::before {
+        .metric-card-pro:hover::before {
             opacity: 1;
         }
 
-        /* Buttons with proper styling */
-        .btn-primary {
-            background: linear-gradient(135deg, #638C82 0%, #4A6B65 100%);
-            box-shadow: 0 4px 15px rgba(99, 140, 130, 0.3);
+        /* Charts & Panels */
+        .chart-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .control-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .control-panel::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-radius: 10px;
+        }
+
+        .control-panel::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* Buttons */
+        .btn-terminal {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
             transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-terminal:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 140, 130, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(99, 140, 130, 0.4);
         }
 
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-secondary {
-            background: #2A3441;
-            transition: all 0.3s;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
         }
 
         .btn-secondary:hover {
-            background: #3A4451;
+            background: var(--bg-elevated);
+            border-color: var(--primary);
         }
 
-        /* Activity feed styling */
+        /* Activity feed */
+        .activity-feed {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .activity-feed::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .activity-feed::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-radius: 10px;
+        }
+
+        .activity-feed::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
         .activity-item {
-            background: #1A1F26;
-            border-left: 3px solid #3DD68C;
-            animation: slideIn 0.3s ease-out;
+            background: var(--bg-primary);
+            border-left: 3px solid;
+            border-radius: 8px;
+            padding: 15px;
+            animation: slideInRight 0.3s ease-out;
         }
 
-        @keyframes slideIn {
+        @keyframes slideInRight {
             from {
                 opacity: 0;
                 transform: translateX(20px);
@@ -101,327 +274,368 @@
             }
         }
 
-        .activity-item.buy { border-left-color: #3DD68C; }
-        .activity-item.sell { border-left-color: #FF4757; }
-        .activity-item.hold { border-left-color: #FFA502; }
+        .activity-item.buy {
+            border-color: var(--success);
+            background: linear-gradient(90deg, var(--success-glow) 0%, var(--bg-primary) 100%);
+        }
 
-        /* Confidence bars with smooth animation */
+        .activity-item.sell {
+            border-color: var(--danger);
+            background: linear-gradient(90deg, var(--danger-glow) 0%, var(--bg-primary) 100%);
+        }
+
+        /* Confidence bars */
         .confidence-bar {
-            background: #1A1F26;
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
             overflow: hidden;
-            border-radius: 9999px;
+            position: relative;
         }
 
         .confidence-fill {
             height: 100%;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 9999px;
-        }
-
-        .confidence-fill.buy { background: linear-gradient(90deg, #3DD68C 0%, #2AB86F 100%); }
-        .confidence-fill.hold { background: linear-gradient(90deg, #FFA502 0%, #FF8C00 100%); }
-        .confidence-fill.sell { background: linear-gradient(90deg, #FF4757 0%, #E03444 100%); }
-
-        /* Chart containers */
-        .chart-panel {
-            background: linear-gradient(135deg, #141920 0%, #1E242C 100%);
-            border: 1px solid #2A3441;
+            transition: width 0.5s ease-out;
             position: relative;
         }
 
-        /* Loading spinner */
-        .spinner {
-            border: 4px solid #2A3441;
-            border-top: 4px solid #638C82;
+        .confidence-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .confidence-fill.buy {
+            background: linear-gradient(90deg, var(--success) 0%, #26A69A 100%);
+            box-shadow: 0 0 10px var(--success-glow);
+        }
+
+        .confidence-fill.hold {
+            background: linear-gradient(90deg, var(--warning) 0%, #FF8C00 100%);
+            box-shadow: 0 0 10px var(--warning-glow);
+        }
+
+        .confidence-fill.sell {
+            background: linear-gradient(90deg, var(--danger) 0%, #EF5350 100%);
+            box-shadow: 0 0 10px var(--danger-glow);
+        }
+
+        /* Status dot pulse */
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
+            background: var(--text-muted);
+            animation: pulse-status 2s infinite;
+        }
+
+        .status-dot.active {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success-glow);
+        }
+
+        @keyframes pulse-status {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Loading overlay */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--bg-elevated);
+            border-top-color: var(--primary);
+            border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Number animations */
-        .animate-value {
-            transition: all 0.3s ease-out;
+        /* Input styles */
+        .control-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s;
         }
 
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .control-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 140, 130, 0.1);
         }
 
-        ::-webkit-scrollbar-track {
-            background: #1A1F26;
+        /* Panel title */
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-light);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #2A3441;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #638C82;
+        .panel-title::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 2px;
         }
     </style>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'spike-bg': '#0A0E12',
-                        'spike-card': '#141920',
-                        'spike-border': '#2A3441',
-                        'spike-primary': '#638C82',
-                        'spike-success': '#3DD68C',
-                        'spike-danger': '#FF4757',
-                        'spike-warning': '#FFA502',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
-<body class="bg-spike-bg text-white overflow-hidden">
-
-    <!-- Header -->
-    <header class="bg-[#111519] border-b border-spike-border px-6 py-3.5">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div>
-                    <h1 class="text-3xl font-black text-spike-primary italic -skew-x-6 tracking-tight">SPIKE</h1>
-                    <span class="text-[9px] text-gray-500 tracking-[0.4em] font-semibold ml-1">TERMINAL</span>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-8 text-sm font-medium">
-                <div class="flex items-center space-x-2">
-                    <span class="text-gray-400">RELIANCE.NS</span>
-                    <span class="text-white font-semibold" id="live-price">₹0.00</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span class="text-gray-400">PORTFOLIO</span>
-                    <span class="text-spike-success font-semibold" id="live-portfolio">₹50,000</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span class="text-gray-400">P&L</span>
-                    <span class="font-semibold" id="live-pnl">₹0.00</span>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-2">
-                <div class="w-2 h-2 bg-gray-600 rounded-full animate-pulse" id="system-status"></div>
-                <span class="text-sm text-gray-400" id="status-label">System Idle</span>
+<body>
+    <!-- HEADER -->
+    <div class="terminal-header flex items-center justify-between px-8">
+        <!-- Logo -->
+        <div class="flex items-center gap-4">
+            <div class="logo-text">
+                <h1>SPIKE</h1>
+                <div class="logo-subtitle">TERMINAL</div>
             </div>
         </div>
-    </header>
 
-    <!-- Main Grid -->
+        <!-- Ticker -->
+        <div class="flex items-center gap-8 font-mono text-sm">
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">RELIANCE.NS</span>
+                <span class="text-base font-bold text-white" id="live-price">₹0.00</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">PORTFOLIO</span>
+                <span class="text-base font-bold text-white" id="live-portfolio">₹50,000</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">P&L</span>
+                <span class="text-base font-bold" id="live-pnl">+₹0</span>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-800 border border-gray-700">
+            <div class="status-dot" id="system-status"></div>
+            <span class="text-sm font-semibold text-gray-400" id="status-label">System Idle</span>
+        </div>
+    </div>
+
+    <!-- MAIN GRID LAYOUT -->
     <div class="grid grid-cols-[350px_1fr_400px] gap-4 p-4 h-[calc(100vh-70px)]">
+        <!-- LEFT SIDEBAR - CONTROL PANEL -->
+        <div class="control-panel flex flex-col gap-6">
+            <!-- Simulation Controls -->
+            <div>
+                <div class="panel-title">Simulation Controls</div>
 
-        <!-- LEFT SIDEBAR -->
-        <div class="gradient-card rounded-xl border border-spike-border p-5 overflow-y-auto">
-            <h2 class="text-sm font-bold mb-4 text-gray-300 uppercase tracking-wider border-b border-spike-border pb-3">Simulation Controls</h2>
-
-            <div class="space-y-3.5">
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-wide font-medium">Start Date</label>
-                    <input type="date" class="w-full bg-[#1A1F26] border border-spike-border rounded-lg px-3 py-2.5 text-white text-sm focus:border-spike-primary focus:outline-none focus:ring-2 focus:ring-spike-primary focus:ring-opacity-30 transition-all" id="start-date" value="2024-01-01">
+                <div class="mb-4">
+                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-2 font-semibold">Start Date</label>
+                    <input type="date" id="start-date" class="control-input" value="2024-01-01">
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-wide font-medium">End Date</label>
-                    <input type="date" class="w-full bg-[#1A1F26] border border-spike-border rounded-lg px-3 py-2.5 text-white text-sm focus:border-spike-primary focus:outline-none focus:ring-2 focus:ring-spike-primary focus:ring-opacity-30 transition-all" id="end-date" value="2024-03-31">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1.5 uppercase tracking-wide font-medium">Initial Capital (₹)</label>
-                    <input type="number" class="w-full bg-[#1A1F26] border border-spike-border rounded-lg px-3 py-2.5 text-white text-sm focus:border-spike-primary focus:outline-none focus:ring-2 focus:ring-spike-primary focus:ring-opacity-30 transition-all" id="capital" value="50000" step="1000">
-                </div>
-            </div>
 
-            <div class="flex gap-2.5 mt-5">
-                <button class="flex-1 btn-primary text-white font-semibold py-2.5 px-4 rounded-lg text-sm" id="start-btn" onclick="startTrading()">
-                    ▶ START
-                </button>
-                <button class="flex-1 btn-secondary text-white font-semibold py-2.5 px-4 rounded-lg text-sm opacity-50" id="stop-btn" onclick="stopTrading()" disabled>
-                    ⏸ STOP
-                </button>
-            </div>
+                <div class="mb-4">
+                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-2 font-semibold">End Date</label>
+                    <input type="date" id="end-date" class="control-input" value="2024-03-31">
+                </div>
 
-            <div class="mt-6 pt-5 border-t border-spike-border">
-                <h3 class="text-xs font-bold mb-3 text-gray-300 uppercase tracking-wider">Market Statistics</h3>
-                <div class="space-y-2.5 text-sm">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-400 text-xs">Simulation Step</span>
-                        <span class="text-white font-semibold" id="current-step">0</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-400 text-xs">Cash Balance</span>
-                        <span class="text-white font-semibold" id="cash-balance">₹50,000</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-400 text-xs">Shares Held</span>
-                        <span class="text-white font-semibold" id="shares-held">0</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-400 text-xs">Position Value</span>
-                        <span class="text-white font-semibold" id="position-value">₹0</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-400 text-xs">Total Trades</span>
-                        <span class="text-white font-semibold" id="total-trades">0</span>
-                    </div>
+                <div class="mb-4">
+                    <label class="block text-xs text-gray-500 uppercase tracking-wide mb-2 font-semibold">Initial Capital (₹)</label>
+                    <input type="number" id="capital" class="control-input" value="50000">
+                </div>
+
+                <div class="flex gap-3">
+                    <button id="start-btn" onclick="startTrading()" class="btn-terminal btn-primary flex-1">▶ START</button>
+                    <button id="stop-btn" onclick="stopTrading()" class="btn-terminal btn-secondary flex-1" disabled>■ STOP</button>
                 </div>
             </div>
 
-            <div class="mt-6 pt-5 border-t border-spike-border">
-                <h3 class="text-xs font-bold mb-3 text-gray-300 uppercase tracking-wider">Data Export</h3>
-                <button class="w-full btn-secondary text-white font-semibold py-2.5 px-4 rounded-lg text-sm" onclick="exportTradesCSV()">
-                    EXPORT CSV
-                </button>
+            <!-- Market Statistics -->
+            <div class="pt-5 border-t border-gray-800">
+                <div class="panel-title">Market Statistics</div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
+                        <span class="text-xs text-gray-500">Simulation Step</span>
+                        <span class="text-sm font-bold text-white font-mono" id="current-step">0</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
+                        <span class="text-xs text-gray-500">Cash Balance</span>
+                        <span class="text-sm font-bold text-white font-mono" id="cash-balance">₹50,000</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
+                        <span class="text-xs text-gray-500">Shares Held</span>
+                        <span class="text-sm font-bold text-white font-mono" id="shares-held">0</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-800">
+                        <span class="text-xs text-gray-500">Position Value</span>
+                        <span class="text-sm font-bold text-white font-mono" id="position-value">₹0</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-xs text-gray-500">Total Trades</span>
+                        <span class="text-sm font-bold text-white font-mono" id="total-trades">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Export -->
+            <div class="pt-5 border-t border-gray-800">
+                <div class="panel-title">Data Export</div>
+                <button onclick="exportTradesCSV()" class="btn-terminal btn-secondary w-full">Export CSV</button>
             </div>
         </div>
 
-        <!-- MIDDLE SECTION -->
-        <div class="space-y-4">
-            <!-- 4 METRIC CARDS -->
-            <div class="grid grid-cols-4 gap-3.5">
-                <div class="metric-card rounded-xl p-4 overflow-hidden">
-                    <div class="text-[11px] text-gray-400 uppercase tracking-wide mb-2 font-semibold">Portfolio Value</div>
-                    <div class="text-2xl font-bold text-white mb-1 animate-value" id="metric-portfolio">₹50,000</div>
-                    <div class="text-sm font-semibold mb-2" id="metric-portfolio-change"><span class="text-spike-success">+0.00%</span></div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wide">Total Assets</div>
+        <!-- CENTER AREA -->
+        <div class="grid grid-rows-[auto_1fr] gap-4">
+            <!-- TOP ROW - 4 METRIC CARDS -->
+            <div class="grid grid-cols-4 gap-4">
+                <!-- Portfolio Value -->
+                <div class="metric-card-pro">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Portfolio Value</div>
+                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-portfolio">₹50,000</div>
+                    <div class="text-sm font-bold" id="metric-portfolio-change">
+                        <span class="text-green-400">+0.00%</span>
+                    </div>
                 </div>
 
-                <div class="metric-card rounded-xl p-4 overflow-hidden">
-                    <div class="text-[11px] text-gray-400 uppercase tracking-wide mb-2 font-semibold">Sharpe Ratio</div>
-                    <div class="text-2xl font-bold text-white mb-1 animate-value" id="metric-sharpe">4.235</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wide">Risk-Adjusted Return</div>
+                <!-- Sharpe Ratio -->
+                <div class="metric-card-pro">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Sharpe Ratio</div>
+                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-sharpe">4.235</div>
+                    <div class="text-xs text-gray-600 mt-1">Risk-Adjusted Return</div>
                 </div>
 
-                <div class="metric-card rounded-xl p-4 overflow-hidden">
-                    <div class="text-[11px] text-gray-400 uppercase tracking-wide mb-2 font-semibold">Win Rate</div>
-                    <div class="text-2xl font-bold text-white mb-1 animate-value" id="metric-winrate">66.7%</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wide">Trade Success Rate</div>
+                <!-- Win Rate -->
+                <div class="metric-card-pro">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Win Rate</div>
+                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-winrate">66.7%</div>
+                    <div class="text-xs text-gray-600 mt-1">Profitable Trades</div>
                 </div>
 
-                <div class="metric-card rounded-xl p-4 overflow-hidden">
-                    <div class="text-[11px] text-gray-400 uppercase tracking-wide mb-2 font-semibold">Max Drawdown</div>
-                    <div class="text-2xl font-bold text-white mb-1 animate-value" id="metric-drawdown">0.55%</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wide">Peak to Trough</div>
+                <!-- Max Drawdown -->
+                <div class="metric-card-pro">
+                    <div class="text-xs text-gray-500 uppercase tracking-wide mb-3 font-semibold">Max Drawdown</div>
+                    <div class="text-3xl font-black text-white mb-2 font-mono" id="metric-drawdown">0.55%</div>
+                    <div class="text-xs text-gray-600 mt-1">Peak-to-Trough</div>
                 </div>
             </div>
 
-            <!-- CHARTS -->
-            <div class="grid grid-cols-2 gap-3.5 h-[calc(100%-140px)]">
-                <div class="chart-panel rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-spike-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                            </svg>
-                            Portfolio Equity Curve
-                        </span>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-wide">Real-time Performance</span>
+            <!-- BOTTOM - CHARTS -->
+            <div class="grid grid-cols-[2fr_1fr] gap-4">
+                <!-- Portfolio Equity Curve -->
+                <div class="chart-panel">
+                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
+                        <div class="text-base font-bold text-green-300">Portfolio Equity Curve</div>
+                        <div class="text-xs text-gray-500">Real-time Performance</div>
                     </div>
-                    <div class="h-[calc(100%-40px)]">
+                    <div style="height: calc(100% - 60px);">
                         <canvas id="equity-chart"></canvas>
                     </div>
                 </div>
 
-                <div class="chart-panel rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm font-semibold text-gray-200 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-spike-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                            Agent Actions
-                        </span>
+                <!-- Agent Actions -->
+                <div class="chart-panel">
+                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
+                        <div class="text-base font-bold text-green-300">Agent Actions</div>
                     </div>
-                    <div class="h-[calc(100%-40px)]">
+                    <div style="height: calc(100% - 60px);">
                         <canvas id="actions-chart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT SIDEBAR -->
-        <div class="gradient-card rounded-xl border border-spike-border p-5 overflow-y-auto">
-            <div class="flex items-center justify-between mb-4 border-b border-spike-border pb-3">
-                <h3 class="text-sm font-bold text-gray-300 uppercase tracking-wider">Live Activity</h3>
-                <span class="bg-[#2A3441] text-white text-xs px-2.5 py-1 rounded-full font-semibold" id="activity-count">33</span>
-            </div>
-
-            <div class="space-y-2" id="activity-feed">
-                <div class="activity-item rounded-lg p-3 buy">
-                    <div class="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">10:18:45 AM</div>
-                    <div class="text-sm text-gray-200 font-medium">BUY @ ₹1424.93</div>
-                    <div class="text-xs text-gray-400 mt-0.5">Confidence: 89%</div>
+        <!-- RIGHT SIDEBAR - ACTIVITY & CONFIDENCE -->
+        <div class="control-panel flex flex-col">
+            <!-- Live Activity -->
+            <div class="flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-800">
+                    <div class="panel-title !mb-0">Live Activity</div>
+                    <div class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold" id="activity-count">0</div>
+                </div>
+                <div class="activity-feed" id="activity-feed">
+                    <!-- Activity items will be added here dynamically -->
                 </div>
             </div>
 
-            <div class="mt-6 pt-5 border-t border-spike-border">
-                <h3 class="text-xs font-bold mb-3 text-gray-300 uppercase tracking-wider">AI Confidence</h3>
-                <div class="space-y-3.5">
+            <!-- AI Confidence -->
+            <div class="mt-5 pt-5 border-t border-gray-800">
+                <div class="panel-title">AI Confidence</div>
+                <div class="space-y-4">
                     <div>
-                        <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-gray-400 font-semibold">BUY</span>
-                            <span class="text-white font-semibold" id="conf-buy-val">35.3%</span>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs text-gray-500 uppercase tracking-wide font-bold">BUY</span>
+                            <span class="text-xs font-bold text-white font-mono" id="conf-buy-val">33.3%</span>
                         </div>
-                        <div class="confidence-bar rounded-full h-2">
-                            <div class="confidence-fill buy" id="conf-buy" style="width: 35%"></div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill buy" id="conf-buy" style="width: 33.3%"></div>
                         </div>
                     </div>
                     <div>
-                        <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-gray-400 font-semibold">HOLD</span>
-                            <span class="text-white font-semibold" id="conf-hold-val">33.0%</span>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs text-gray-500 uppercase tracking-wide font-bold">HOLD</span>
+                            <span class="text-xs font-bold text-white font-mono" id="conf-hold-val">33.3%</span>
                         </div>
-                        <div class="confidence-bar rounded-full h-2">
-                            <div class="confidence-fill hold" id="conf-hold" style="width: 33%"></div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill hold" id="conf-hold" style="width: 33.3%"></div>
                         </div>
                     </div>
                     <div>
-                        <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-gray-400 font-semibold">SELL</span>
-                            <span class="text-white font-semibold" id="conf-sell-val">31.7%</span>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs text-gray-500 uppercase tracking-wide font-bold">SELL</span>
+                            <span class="text-xs font-bold text-white font-mono" id="conf-sell-val">33.3%</span>
                         </div>
-                        <div class="confidence-bar rounded-full h-2">
-                            <div class="confidence-fill sell" id="conf-sell" style="width: 31%"></div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill sell" id="conf-sell" style="width: 33.3%"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-6 pt-5 border-t border-spike-border">
-                <h3 class="text-xs font-bold mb-3 text-gray-300 uppercase tracking-wider">Current Position</h3>
-                <div class="grid grid-cols-2 gap-3 text-sm">
+            <!-- Current Position -->
+            <div class="mt-5 pt-5 border-t border-gray-800">
+                <div class="panel-title">Current Position</div>
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <div class="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Stock</div>
-                        <div class="text-white font-semibold">RELIANCE.NS</div>
+                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Stock</div>
+                        <div class="text-white font-bold text-sm" id="pos-stock">RELIANCE.NS</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Price</div>
-                        <div class="text-white font-semibold" id="pos-price">₹1474.93</div>
+                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Price</div>
+                        <div class="text-white font-bold text-sm font-mono" id="pos-price">₹1,474.93</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Inventory</div>
-                        <div class="text-white font-semibold" id="pos-inventory">0</div>
+                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Inventory</div>
+                        <div class="text-white font-bold text-sm font-mono" id="pos-inventory">0</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Avg Cost</div>
-                        <div class="text-white font-semibold" id="pos-avgcost">₹1448.67</div>
+                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Avg Cost</div>
+                        <div class="text-white font-bold text-sm font-mono" id="pos-avgcost">₹1,468.69</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Unrealized P&L</div>
-                        <div class="text-spike-success font-semibold" id="pos-unrealized">+₹218.09</div>
+                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Unrealized P&L</div>
+                        <div class="text-green-400 font-bold text-sm" id="pos-unrealized">+₹210.09</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">Realized P&L</div>
-                        <div class="text-spike-success font-semibold" id="pos-realized">+₹13.00</div>
+                        <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Realized P&L</div>
+                        <div class="text-green-400 font-bold text-sm" id="pos-realized">+₹13.00</div>
                     </div>
                 </div>
             </div>
@@ -432,10 +646,11 @@
     <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
         <div class="text-center">
             <div class="spinner mx-auto mb-4"></div>
-            <div class="text-spike-primary text-lg font-semibold tracking-wide">Initializing Neural Network...</div>
+            <div class="text-green-400 text-lg font-semibold tracking-wide spinner-text">Initializing Neural Network...</div>
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script src="/static/js/premium_ultimate.js"></script>
 </body>
 </html>
