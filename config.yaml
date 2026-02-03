@@ -42,8 +42,8 @@ environment:
 
 # Training configuration
 training:
-  episodes: 100  # CONTINUATION: 100 more episodes to push Sharpe from 0.123 to 0.25-0.35
-  save_frequency: 10  # Save model every N episodes
+  episodes: 450  # WIPRO TRAINING: Full training cycle for new stock (matched RELIANCE's 450 episodes)
+  save_frequency: 50  # Save checkpoint every 50 episodes
   save_best_only: true  # Only save model when performance improves
   validation_split: 0.2  # Percentage of data for validation
   train_ratio: 0.7  # 70% training
@@ -57,16 +57,38 @@ training:
 # Evaluation configuration
 evaluation:
   initial_balance: 50000
-  transaction_cost: 0.001  # 0.1% per trade
+  transaction_cost: 0.001  # 0.1% per trade (legacy, see detailed breakdown below)
 
-  # Broker charges (Zerodha)
-  brokerage_per_trade: 20  # ₹20 or 0.03% whichever is lower
+  # Zerodha INTRADAY (MIS) Brokerage - Updated Jan 2026
+  # Reference: https://zerodha.com/charges
+  trading_mode: intraday  # intraday (MIS) or delivery (CNC)
+
+  # Broker charges (Zerodha Intraday/MIS)
+  brokerage_per_trade: 20  # ₹20 or 0.03% whichever is lower (same for intraday)
   brokerage_percentage: 0.0003  # 0.03%
-  stt: 0.00025  # Securities Transaction Tax (sell only)
-  exchange_charges: 0.0000297  # NSE charges
-  sebi_charges: 0.000001  # SEBI turnover fee
-  stamp_duty: 0.00003  # Stamp duty (buy only)
-  gst: 0.18  # 18% GST on brokerage + charges
+
+  # STT - Securities Transaction Tax
+  # Intraday: 0.025% on SELL side only
+  # Delivery: 0.1% on both BUY and SELL
+  stt_buy: 0.0  # Intraday: No STT on buy
+  stt_sell: 0.00025  # Intraday: 0.025% on sell only
+  stt: 0.00025  # Legacy field (sell only)
+
+  # Exchange Transaction Charges (NSE)
+  exchange_charges: 0.0000297  # 0.00297%
+
+  # SEBI Turnover Fee
+  sebi_charges: 0.000001  # 0.0001%
+
+  # Stamp Duty (state-wise, using Maharashtra rate)
+  # Intraday: 0.003% on BUY side only
+  stamp_duty: 0.00003  # 0.003% (buy only)
+
+  # GST on (brokerage + exchange charges + SEBI charges)
+  gst: 0.18  # 18%
+
+  # DP Charges (only for delivery, not intraday)
+  dp_charges: 0  # ₹0 for intraday, ₹15.93 per script for delivery
 
   # Metrics to track
   metrics:
@@ -82,8 +104,8 @@ evaluation:
 # Data configuration
 data:
   source: yfinance  # Data provider (yfinance, groww, csv)
-  ticker: RELIANCE.NS  # SINGLE-STOCK: Isolate problem before scaling to multi-stock
-  interval: 1d  # Data interval (1d, 5m, 15m, 1h)
+  ticker: WIPRO.NS  # Training on Wipro as requested
+  interval: 1d  # Data interval (1d, 5m, 15m, 1h) - NOTE: Use 5m/15m for intraday
   start_date: 2020-01-01  # Historical data start date
   end_date: null  # End date (null = today)
 
