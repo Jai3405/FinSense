@@ -44,7 +44,12 @@ export function Navbar() {
           >
             {/* Logo */}
             <Link href="/" className="group">
-              <span className="text-2xl font-bold italic tracking-tight bg-gradient-to-r from-spike-sage via-spike-accent to-spike-mint bg-clip-text text-transparent">
+              <span
+                className="text-2xl font-semibold text-spike-accent tracking-tight transition-all duration-500"
+                style={{
+                  textShadow: '0 0 8px rgba(125, 206, 160, 0.4), 0 0 2px rgba(125, 206, 160, 0.6)',
+                }}
+              >
                 spike
               </span>
             </Link>
