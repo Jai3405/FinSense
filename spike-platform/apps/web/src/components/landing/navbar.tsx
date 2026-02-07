@@ -43,14 +43,8 @@ export function Navbar() {
             }`}
           >
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-10 h-10">
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-spike-sage to-spike-accent opacity-80 group-hover:opacity-100 transition-opacity" />
-                <div className="absolute inset-[2px] rounded-[10px] bg-spike-dark flex items-center justify-center">
-                  <span className="text-spike-mint font-bold text-lg">S</span>
-                </div>
-              </div>
-              <span className="text-xl font-semibold text-spike-cream tracking-tight">
+            <Link href="/" className="group">
+              <span className="text-2xl font-bold italic tracking-tight bg-gradient-to-r from-spike-sage via-spike-accent to-spike-mint bg-clip-text text-transparent">
                 spike
               </span>
             </Link>

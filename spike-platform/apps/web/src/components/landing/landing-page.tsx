@@ -57,10 +57,10 @@ export function LandingPage() {
       {/* Content */}
       <Navbar />
       <Hero />
+      <HowItWorks />
       <LogoCloud />
       <Features />
       <FinScoreSection />
-      <HowItWorks />
       <Testimonials />
       <CTA />
       <Footer />
