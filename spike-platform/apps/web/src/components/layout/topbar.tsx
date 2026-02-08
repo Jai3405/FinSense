@@ -4,6 +4,20 @@ import { useUser, UserButton } from "@clerk/nextjs";
 import { Bell, Menu, Search, TrendingUp, TrendingDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
+// Color constants
+const colors = {
+  bg: "#FFFFFF",
+  bgHover: "#F0FBF9",
+  border: "#B8DDD7",
+  textPrimary: "#0D3331",
+  textSecondary: "#3D6B66",
+  textMuted: "#6B9B94",
+  accent: "#00897B",
+  gain: "#00B386",
+  loss: "#F45B69",
+  inputBg: "#F8FFFE",
+};
+
 interface MarketIndex {
   name: string;
   value: number;
@@ -16,12 +30,11 @@ export function TopBar() {
   const [indices, setIndices] = useState<MarketIndex[]>([
     { name: "NIFTY 50", value: 22150.5, change: 125.3, changePercent: 0.57 },
     { name: "SENSEX", value: 72890.25, change: 380.5, changePercent: 0.52 },
-    { name: "NIFTY BANK", value: 46850.0, change: -125.75, changePercent: -0.27 },
+    { name: "BANK NIFTY", value: 46850.0, change: -125.75, changePercent: -0.27 },
   ]);
   const [isMarketOpen, setIsMarketOpen] = useState(false);
 
   useEffect(() => {
-    // Check if market is open (9:15 AM - 3:30 PM IST, Mon-Fri)
     const checkMarketHours = () => {
       const now = new Date();
       const istOffset = 5.5 * 60 * 60 * 1000;
@@ -43,43 +56,47 @@ export function TopBar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
-      <div className="flex h-16 items-center justify-between px-6">
-        {/* Mobile menu button */}
-        <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100">
-          <Menu className="h-6 w-6 text-slate-500" />
+    <header
+      className="sticky top-0 z-40 h-14"
+      style={{ backgroundColor: colors.bg, borderBottom: `1px solid ${colors.border}` }}
+    >
+      <div className="flex h-full items-center justify-between px-4">
+        {/* Mobile menu */}
+        <button
+          className="lg:hidden p-2 -ml-2 rounded-lg transition-colors"
+          style={{ color: colors.textSecondary }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          <Menu className="h-5 w-5" />
         </button>
 
         {/* Market Indices */}
         <div className="hidden md:flex items-center gap-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span
-              className={`w-2 h-2 rounded-full ${
-                isMarketOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
-              }`}
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: isMarketOpen ? colors.gain : colors.loss }}
             />
-            <span className="text-xs text-slate-500">
-              {isMarketOpen ? "Market Open" : "Market Closed"}
+            <span className="text-xs" style={{ color: colors.textMuted }}>
+              {isMarketOpen ? "Market Open" : "Closed"}
             </span>
           </div>
-          <div className="flex items-center gap-4">
+
+          <div className="flex items-center gap-5">
             {indices.map((index) => (
               <div key={index.name} className="flex items-center gap-2">
-                <span className="text-sm text-slate-500">{index.name}</span>
-                <span className="text-sm font-medium text-slate-900">
+                <span className="text-xs" style={{ color: colors.textMuted }}>
+                  {index.name}
+                </span>
+                <span className="text-sm font-medium" style={{ color: colors.textPrimary }}>
                   {index.value.toLocaleString("en-IN")}
                 </span>
                 <span
-                  className={`flex items-center gap-0.5 text-xs font-medium ${
-                    index.change >= 0 ? "text-spike-bull" : "text-spike-bear"
-                  }`}
+                  className="text-xs font-medium"
+                  style={{ color: index.change >= 0 ? colors.gain : colors.loss }}
                 >
-                  {index.change >= 0 ? (
-                    <TrendingUp className="w-3 h-3" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3" />
-                  )}
-                  {index.changePercent >= 0 ? "+" : ""}
+                  {index.change >= 0 ? "+" : ""}
                   {index.changePercent.toFixed(2)}%
                 </span>
               </div>
@@ -88,41 +105,59 @@ export function TopBar() {
         </div>
 
         {/* Search */}
-        <div className="flex-1 max-w-md mx-8 hidden lg:block">
+        <div className="flex-1 max-w-md mx-6 hidden lg:block">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
+              style={{ color: colors.textMuted }}
+            />
             <input
               type="text"
-              placeholder="Search stocks, themes, or ask AI..."
-              className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-spike-primary/50 focus:border-spike-primary"
+              placeholder="Search stocks, ETFs, or mutual funds"
+              className="w-full h-9 pl-9 pr-3 text-sm rounded-lg transition-colors focus:outline-none"
+              style={{
+                backgroundColor: colors.inputBg,
+                border: `1px solid ${colors.border}`,
+                color: colors.textPrimary,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.backgroundColor = "#FFFFFF";
+                e.currentTarget.style.borderColor = colors.accent;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.backgroundColor = colors.inputBg;
+                e.currentTarget.style.borderColor = colors.border;
+              }}
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 text-xs text-slate-500 bg-slate-200 rounded">
-              ⌘K
-            </kbd>
           </div>
         </div>
 
         {/* Right section */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Notifications */}
-          <button className="relative p-2 rounded-lg hover:bg-slate-100 transition">
-            <Bell className="h-5 w-5 text-slate-500" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-spike-primary rounded-full" />
+          <button
+            className="relative p-2 rounded-lg transition-colors"
+            style={{ color: colors.textSecondary }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          >
+            <Bell className="h-5 w-5" />
+            <span
+              className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: colors.accent }}
+            />
           </button>
 
           {/* User */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:block text-right">
-              <div className="text-sm font-medium text-slate-900">
-                {user?.firstName || "Investor"}
-              </div>
-              <div className="text-xs text-slate-500">Pro Plan</div>
-            </div>
+          <div
+            className="flex items-center gap-2 pl-3"
+            style={{ borderLeft: `1px solid ${colors.border}` }}
+          >
             <UserButton
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: "w-10 h-10",
+                  avatarBox: "w-8 h-8",
                 },
               }}
             />

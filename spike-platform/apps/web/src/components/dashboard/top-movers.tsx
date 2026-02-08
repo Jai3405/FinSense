@@ -4,6 +4,22 @@ import { useState } from "react";
 import { ArrowUpRight, ArrowDownRight, Target } from "lucide-react";
 import { cn, formatCurrency, getFinScoreColor } from "@/lib/utils";
 
+// Color constants
+const colors = {
+  bg: "#FFFFFF",
+  bgHover: "#F0FBF9",
+  bgMint: "#F5FFFC",
+  border: "#B8DDD7",
+  textPrimary: "#0D3331",
+  textSecondary: "#3D6B66",
+  textMuted: "#6B9B94",
+  accent: "#00897B",
+  gain: "#00B386",
+  gainBg: "#E6F9F4",
+  loss: "#F45B69",
+  lossBg: "#FEF0F1",
+};
+
 interface Stock {
   symbol: string;
   name: string;
@@ -116,29 +132,35 @@ export function TopMovers() {
   const stocks = activeTab === "gainers" ? gainers : losers;
 
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
+    <div
+      className="rounded-2xl p-6"
+      style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+    >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-white">Top Movers</h2>
-        <div className="flex rounded-xl bg-white/5 p-1">
+        <h2 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>
+          Top Movers
+        </h2>
+        <div
+          className="flex rounded-xl p-1"
+          style={{ backgroundColor: colors.bgMint }}
+        >
           <button
             onClick={() => setActiveTab("gainers")}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition",
-              activeTab === "gainers"
-                ? "bg-spike-bull/20 text-spike-bull"
-                : "text-slate-400 hover:text-white"
-            )}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition"
+            style={{
+              backgroundColor: activeTab === "gainers" ? colors.gainBg : "transparent",
+              color: activeTab === "gainers" ? colors.gain : colors.textMuted,
+            }}
           >
             Gainers
           </button>
           <button
             onClick={() => setActiveTab("losers")}
-            className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition",
-              activeTab === "losers"
-                ? "bg-spike-bear/20 text-spike-bear"
-                : "text-slate-400 hover:text-white"
-            )}
+            className="px-4 py-2 rounded-lg text-sm font-medium transition"
+            style={{
+              backgroundColor: activeTab === "losers" ? colors.lossBg : "transparent",
+              color: activeTab === "losers" ? colors.loss : colors.textMuted,
+            }}
           >
             Losers
           </button>
@@ -149,17 +171,23 @@ export function TopMovers() {
         {stocks.map((stock) => (
           <div
             key={stock.symbol}
-            className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition cursor-pointer"
+            className="flex items-center justify-between p-4 rounded-xl transition cursor-pointer"
+            style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: colors.border }}
+              >
+                <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
                   {stock.symbol.slice(0, 2)}
                 </span>
               </div>
               <div>
-                <p className="font-medium text-white">{stock.symbol}</p>
-                <p className="text-sm text-slate-400">{stock.name}</p>
+                <p className="font-medium" style={{ color: colors.textPrimary }}>{stock.symbol}</p>
+                <p className="text-sm" style={{ color: colors.textMuted }}>{stock.name}</p>
               </div>
             </div>
 
@@ -174,20 +202,18 @@ export function TopMovers() {
 
               {/* Volume */}
               <div className="text-right hidden sm:block">
-                <p className="text-sm text-slate-400">Vol</p>
-                <p className="text-sm text-white">{stock.volume}</p>
+                <p className="text-sm" style={{ color: colors.textMuted }}>Vol</p>
+                <p className="text-sm" style={{ color: colors.textPrimary }}>{stock.volume}</p>
               </div>
 
               {/* Price & Change */}
               <div className="text-right min-w-[100px]">
-                <p className="font-medium text-white">
+                <p className="font-medium" style={{ color: colors.textPrimary }}>
                   {formatCurrency(stock.price)}
                 </p>
                 <div
-                  className={cn(
-                    "flex items-center justify-end gap-1 text-sm",
-                    stock.change >= 0 ? "text-spike-bull" : "text-spike-bear"
-                  )}
+                  className="flex items-center justify-end gap-1 text-sm"
+                  style={{ color: stock.change >= 0 ? colors.gain : colors.loss }}
                 >
                   {stock.change >= 0 ? (
                     <ArrowUpRight className="w-4 h-4" />

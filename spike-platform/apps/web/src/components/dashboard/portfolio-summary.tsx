@@ -3,6 +3,21 @@
 import { ArrowDownRight, ArrowUpRight, TrendingUp } from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 
+// Color constants
+const colors = {
+  bg: "#FFFFFF",
+  bgMint: "#F5FFFC",
+  border: "#B8DDD7",
+  textPrimary: "#0D3331",
+  textSecondary: "#3D6B66",
+  textMuted: "#6B9B94",
+  accent: "#00897B",
+  gain: "#00B386",
+  gainBg: "#E6F9F4",
+  loss: "#F45B69",
+  lossBg: "#FEF0F1",
+};
+
 interface PortfolioData {
   totalValue: number;
   invested: number;
@@ -26,12 +41,20 @@ export function PortfolioSummary() {
   const isPositive = portfolio.todayChange >= 0;
 
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
+    <div
+      className="rounded-2xl p-6"
+      style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+    >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-white">Portfolio Summary</h2>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-spike-primary/20">
-          <TrendingUp className="w-4 h-4 text-spike-primary" />
-          <span className="text-sm font-medium text-spike-primary">
+        <h2 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>
+          Portfolio Summary
+        </h2>
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg"
+          style={{ backgroundColor: colors.gainBg }}
+        >
+          <TrendingUp className="w-4 h-4" style={{ color: colors.gain }} />
+          <span className="text-sm font-medium" style={{ color: colors.gain }}>
             Outperforming NIFTY by 8.2%
           </span>
         </div>
@@ -40,28 +63,28 @@ export function PortfolioSummary() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {/* Total Value */}
         <div>
-          <p className="text-sm text-slate-400 mb-1">Total Value</p>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-sm mb-1" style={{ color: colors.textMuted }}>Total Value</p>
+          <p className="text-2xl font-bold" style={{ color: colors.textPrimary }}>
             {formatCurrency(portfolio.totalValue)}
           </p>
         </div>
 
         {/* Invested */}
         <div>
-          <p className="text-sm text-slate-400 mb-1">Invested</p>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-sm mb-1" style={{ color: colors.textMuted }}>Invested</p>
+          <p className="text-2xl font-bold" style={{ color: colors.textPrimary }}>
             {formatCurrency(portfolio.invested)}
           </p>
         </div>
 
         {/* Total Returns */}
         <div>
-          <p className="text-sm text-slate-400 mb-1">Total Returns</p>
+          <p className="text-sm mb-1" style={{ color: colors.textMuted }}>Total Returns</p>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-bold text-spike-bull">
+            <p className="text-2xl font-bold" style={{ color: colors.gain }}>
               {formatCurrency(portfolio.returns)}
             </p>
-            <span className="text-sm text-spike-bull">
+            <span className="text-sm" style={{ color: colors.gain }}>
               {formatPercent(portfolio.returnsPercent)}
             </span>
           </div>
@@ -69,31 +92,28 @@ export function PortfolioSummary() {
 
         {/* Today's Change */}
         <div>
-          <p className="text-sm text-slate-400 mb-1">Today's Change</p>
+          <p className="text-sm mb-1" style={{ color: colors.textMuted }}>Today's Change</p>
           <div className="flex items-center gap-2">
             <div
-              className={`p-1 rounded-lg ${
-                isPositive ? "bg-spike-bull/20" : "bg-spike-bear/20"
-              }`}
+              className="p-1 rounded-lg"
+              style={{ backgroundColor: isPositive ? colors.gainBg : colors.lossBg }}
             >
               {isPositive ? (
-                <ArrowUpRight className="w-4 h-4 text-spike-bull" />
+                <ArrowUpRight className="w-4 h-4" style={{ color: colors.gain }} />
               ) : (
-                <ArrowDownRight className="w-4 h-4 text-spike-bear" />
+                <ArrowDownRight className="w-4 h-4" style={{ color: colors.loss }} />
               )}
             </div>
             <div>
               <p
-                className={`text-xl font-bold ${
-                  isPositive ? "text-spike-bull" : "text-spike-bear"
-                }`}
+                className="text-xl font-bold"
+                style={{ color: isPositive ? colors.gain : colors.loss }}
               >
                 {formatCurrency(Math.abs(portfolio.todayChange))}
               </p>
               <span
-                className={`text-sm ${
-                  isPositive ? "text-spike-bull" : "text-spike-bear"
-                }`}
+                className="text-sm"
+                style={{ color: isPositive ? colors.gain : colors.loss }}
               >
                 {formatPercent(portfolio.todayChangePercent)}
               </span>
@@ -103,14 +123,17 @@ export function PortfolioSummary() {
       </div>
 
       {/* Mini Chart Placeholder */}
-      <div className="mt-6 h-24 rounded-xl bg-gradient-to-r from-spike-bull/10 to-spike-bull/5 flex items-end p-4">
+      <div
+        className="mt-6 h-24 rounded-xl flex items-end p-4"
+        style={{ background: `linear-gradient(to right, ${colors.gainBg}, ${colors.bgMint})` }}
+      >
         <div className="flex items-end gap-1 w-full">
           {[40, 45, 38, 52, 48, 60, 55, 65, 70, 68, 75, 80, 78, 85, 90].map(
             (h, i) => (
               <div
                 key={i}
-                className="flex-1 bg-spike-bull/60 rounded-t"
-                style={{ height: `${h}%` }}
+                className="flex-1 rounded-t"
+                style={{ height: `${h}%`, backgroundColor: `${colors.gain}99` }}
               />
             )
           )}

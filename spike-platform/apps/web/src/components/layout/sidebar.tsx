@@ -7,7 +7,6 @@ import {
   BarChart3,
   Bot,
   Briefcase,
-  ChevronDown,
   Compass,
   Home,
   Layers,
@@ -15,9 +14,21 @@ import {
   Settings,
   Sparkles,
   Target,
-  Wallet,
   Zap,
 } from "lucide-react";
+
+// Color constants
+const colors = {
+  bg: "#FFFFFF",
+  bgHover: "#F0FBF9",
+  bgActive: "#E5F7F4",
+  border: "#B8DDD7",
+  textPrimary: "#0D3331",
+  textSecondary: "#3D6B66",
+  textMuted: "#6B9B94",
+  accent: "#00897B",
+  accentBg: "#E0F2F1",
+};
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -39,34 +50,47 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r border-slate-200 bg-white lg:flex">
+    <aside
+      className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col lg:flex"
+      style={{ backgroundColor: colors.bg, borderRight: `1px solid ${colors.border}` }}
+    >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-6">
-        <div className="w-10 h-10 rounded-xl bg-spike-gradient flex items-center justify-center">
-          <Zap className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-2xl font-bold text-slate-900">SPIKE</span>
+      <div
+        className="flex h-14 items-center px-5"
+        style={{ borderBottom: `1px solid ${colors.border}` }}
+      >
+        <Link href="/dashboard">
+          <span
+            className="font-serif text-2xl font-semibold tracking-tight"
+            style={{ color: colors.accent }}
+          >
+            spike
+          </span>
+        </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
-        <div className="space-y-1">
+      <nav className="flex-1 py-4 px-3">
+        <div className="space-y-0.5">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
-                  isActive
-                    ? "bg-spike-primary/10 text-spike-primary"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                )}
+                className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
+                style={{
+                  backgroundColor: isActive ? colors.bgActive : "transparent",
+                  color: isActive ? colors.accent : colors.textSecondary,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.backgroundColor = colors.bgHover;
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+                }}
               >
-                <item.icon
-                  className={cn("h-5 w-5", isActive && "text-spike-primary")}
-                />
+                <item.icon className="h-[18px] w-[18px]" />
                 {item.name}
               </Link>
             );
@@ -74,37 +98,43 @@ export function Sidebar() {
         </div>
 
         {/* AI Tools Section */}
-        <div className="pt-6">
-          <div className="flex items-center justify-between px-4 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="mt-8">
+          <div className="px-3 mb-2">
+            <span
+              className="text-xs font-medium uppercase tracking-wider"
+              style={{ color: colors.textMuted }}
+            >
               AI Tools
             </span>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {aiTools.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={cn(
-                    "flex items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-spike-primary/10 text-spike-primary"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                  )}
+                  className="flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
+                  style={{
+                    backgroundColor: isActive ? colors.bgActive : "transparent",
+                    color: isActive ? colors.accent : colors.textSecondary,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.backgroundColor = colors.bgHover;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon
-                      className={cn(
-                        "h-5 w-5",
-                        isActive && "text-spike-primary"
-                      )}
-                    />
+                    <item.icon className="h-[18px] w-[18px]" />
                     {item.name}
                   </div>
                   {item.badge && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-spike-gradient text-white">
+                    <span
+                      className="px-1.5 py-0.5 text-[10px] font-semibold rounded text-white"
+                      style={{ backgroundColor: colors.accent }}
+                    >
                       {item.badge}
                     </span>
                   )}
@@ -116,32 +146,18 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="border-t border-slate-200 p-4">
+      <div className="p-3" style={{ borderTop: `1px solid ${colors.border}` }}>
         <Link
           href="/dashboard/settings"
-          className={cn(
-            "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
-            pathname === "/dashboard/settings"
-              ? "bg-spike-primary/10 text-spike-primary"
-              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-          )}
+          className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors"
+          style={{
+            backgroundColor: pathname === "/dashboard/settings" ? colors.bgActive : "transparent",
+            color: pathname === "/dashboard/settings" ? colors.accent : colors.textSecondary,
+          }}
         >
-          <Settings className="h-5 w-5" />
+          <Settings className="h-[18px] w-[18px]" />
           Settings
         </Link>
-
-        {/* Portfolio Summary */}
-        <div className="mt-4 rounded-xl bg-slate-100 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-500">Portfolio Value</span>
-            <Wallet className="w-4 h-4 text-slate-500" />
-          </div>
-          <div className="text-2xl font-bold text-slate-900">₹12,45,678</div>
-          <div className="flex items-center gap-1 text-sm text-spike-bull">
-            <span>+2.4%</span>
-            <span className="text-slate-500">today</span>
-          </div>
-        </div>
       </div>
     </aside>
   );

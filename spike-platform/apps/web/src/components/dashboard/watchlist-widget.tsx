@@ -3,6 +3,20 @@
 import { Plus, MoreVertical, Target } from "lucide-react";
 import { cn, formatCurrency, getFinScoreColor } from "@/lib/utils";
 
+// Color constants
+const colors = {
+  bg: "#FFFFFF",
+  bgHover: "#F0FBF9",
+  bgMint: "#F5FFFC",
+  border: "#B8DDD7",
+  textPrimary: "#0D3331",
+  textSecondary: "#3D6B66",
+  textMuted: "#6B9B94",
+  accent: "#00897B",
+  gain: "#00B386",
+  loss: "#F45B69",
+};
+
 interface WatchlistStock {
   symbol: string;
   name: string;
@@ -65,11 +79,21 @@ export function WatchlistWidget() {
   ];
 
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
+    <div
+      className="rounded-2xl p-6"
+      style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+    >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-white">Watchlist</h2>
-        <button className="p-2 rounded-lg hover:bg-white/5 transition">
-          <Plus className="w-5 h-5 text-slate-400" />
+        <h2 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>
+          Watchlist
+        </h2>
+        <button
+          className="p-2 rounded-lg transition-colors"
+          style={{ color: colors.textMuted }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          <Plus className="w-5 h-5" />
         </button>
       </div>
 
@@ -77,28 +101,29 @@ export function WatchlistWidget() {
         {watchlist.map((stock) => (
           <div
             key={stock.symbol}
-            className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition cursor-pointer group"
+            className="flex items-center justify-between p-3 rounded-xl transition cursor-pointer group"
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
+              >
+                <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
                   {stock.symbol.slice(0, 2)}
                 </span>
               </div>
               <div>
-                <p className="font-medium text-white text-sm">{stock.symbol}</p>
+                <p className="font-medium text-sm" style={{ color: colors.textPrimary }}>
+                  {stock.symbol}
+                </p>
                 <div className="flex items-center gap-1.5">
                   <Target
-                    className={cn(
-                      "w-3 h-3",
-                      getFinScoreColor(stock.finScore)
-                    )}
+                    className={cn("w-3 h-3", getFinScoreColor(stock.finScore))}
                   />
                   <span
-                    className={cn(
-                      "text-xs",
-                      getFinScoreColor(stock.finScore)
-                    )}
+                    className={cn("text-xs", getFinScoreColor(stock.finScore))}
                   >
                     {stock.finScore.toFixed(1)}
                   </span>
@@ -108,28 +133,42 @@ export function WatchlistWidget() {
 
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>
                   {formatCurrency(stock.price)}
                 </p>
                 <p
-                  className={cn(
-                    "text-xs",
-                    stock.change >= 0 ? "text-spike-bull" : "text-spike-bear"
-                  )}
+                  className="text-xs"
+                  style={{ color: stock.change >= 0 ? colors.gain : colors.loss }}
                 >
                   {stock.change >= 0 ? "+" : ""}
                   {stock.changePercent.toFixed(2)}%
                 </p>
               </div>
-              <button className="p-1 rounded-lg hover:bg-white/10 opacity-0 group-hover:opacity-100 transition">
-                <MoreVertical className="w-4 h-4 text-slate-400" />
+              <button
+                className="p-1 rounded-lg opacity-0 group-hover:opacity-100 transition"
+                style={{ color: colors.textMuted }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                <MoreVertical className="w-4 h-4" />
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      <button className="w-full mt-4 py-3 rounded-xl border border-dashed border-white/20 text-slate-400 text-sm hover:border-white/40 hover:text-white transition">
+      <button
+        className="w-full mt-4 py-3 rounded-xl border border-dashed text-sm transition-colors"
+        style={{ borderColor: colors.border, color: colors.textMuted }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = colors.accent;
+          e.currentTarget.style.color = colors.accent;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = colors.border;
+          e.currentTarget.style.color = colors.textMuted;
+        }}
+      >
         Add more stocks to watchlist
       </button>
     </div>

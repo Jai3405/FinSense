@@ -72,6 +72,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-inter)"],
         mono: ["var(--font-jetbrains-mono)"],
+        serif: ["var(--font-playfair)"],
         display: ["var(--font-cabinet)"],
       },
       keyframes: {

@@ -15,11 +15,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen" style={{ backgroundColor: "#F5FFFC" }}>
       <Sidebar />
-      <div className="lg:pl-72">
+      <div className="lg:pl-64">
         <TopBar />
-        <main className="p-6">{children}</main>
+        <main className="py-5 px-6">{children}</main>
       </div>
     </div>
   );

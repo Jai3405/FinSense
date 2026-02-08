@@ -6,14 +6,20 @@ import { WatchlistWidget } from "@/components/dashboard/watchlist-widget";
 import { AIInsights } from "@/components/dashboard/ai-insights";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 
+// Color constants
+const colors = {
+  textPrimary: "#0D3331",
+  textMuted: "#6B9B94",
+};
+
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Good Morning!</h1>
-          <p className="text-slate-400">
+          <h1 className="text-2xl font-bold" style={{ color: colors.textPrimary }}>Good Morning!</h1>
+          <p style={{ color: colors.textMuted }}>
             Here's what's happening with your investments today.
           </p>
         </div>
@@ -55,7 +61,8 @@ export default function DashboardPage() {
 function WidgetSkeleton({ className }: { className?: string }) {
   return (
     <div
-      className={`rounded-2xl bg-white/5 border border-white/10 animate-pulse ${className}`}
+      className={`rounded-2xl animate-pulse ${className}`}
+      style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}
     />
   );
 }
