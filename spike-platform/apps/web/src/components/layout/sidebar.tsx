@@ -39,13 +39,13 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r border-white/10 bg-slate-950 lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col border-r border-slate-200 bg-white lg:flex">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-white/10 px-6">
+      <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-6">
         <div className="w-10 h-10 rounded-xl bg-spike-gradient flex items-center justify-center">
           <Zap className="w-6 h-6 text-white" />
         </div>
-        <span className="text-2xl font-bold text-white">SPIKE</span>
+        <span className="text-2xl font-bold text-slate-900">SPIKE</span>
       </div>
 
       {/* Navigation */}
@@ -60,8 +60,8 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
                   isActive
-                    ? "bg-spike-primary/20 text-white"
-                    : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    ? "bg-spike-primary/10 text-spike-primary"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
                 <item.icon
@@ -90,8 +90,8 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
                     isActive
-                      ? "bg-spike-primary/20 text-white"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white"
+                      ? "bg-spike-primary/10 text-spike-primary"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -116,14 +116,14 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="border-t border-white/10 p-4">
+      <div className="border-t border-slate-200 p-4">
         <Link
           href="/dashboard/settings"
           className={cn(
             "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all",
             pathname === "/dashboard/settings"
-              ? "bg-spike-primary/20 text-white"
-              : "text-slate-400 hover:bg-white/5 hover:text-white"
+              ? "bg-spike-primary/10 text-spike-primary"
+              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           )}
         >
           <Settings className="h-5 w-5" />
@@ -131,15 +131,15 @@ export function Sidebar() {
         </Link>
 
         {/* Portfolio Summary */}
-        <div className="mt-4 rounded-xl bg-white/5 p-4">
+        <div className="mt-4 rounded-xl bg-slate-100 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-slate-400">Portfolio Value</span>
-            <Wallet className="w-4 h-4 text-slate-400" />
+            <span className="text-xs text-slate-500">Portfolio Value</span>
+            <Wallet className="w-4 h-4 text-slate-500" />
           </div>
-          <div className="text-2xl font-bold text-white">₹12,45,678</div>
+          <div className="text-2xl font-bold text-slate-900">₹12,45,678</div>
           <div className="flex items-center gap-1 text-sm text-spike-bull">
             <span>+2.4%</span>
-            <span className="text-slate-400">today</span>
+            <span className="text-slate-500">today</span>
           </div>
         </div>
       </div>

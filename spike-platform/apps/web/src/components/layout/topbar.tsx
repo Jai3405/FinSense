@@ -43,11 +43,11 @@ export function TopBar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between px-6">
         {/* Mobile menu button */}
-        <button className="lg:hidden p-2 rounded-lg hover:bg-white/5">
-          <Menu className="h-6 w-6 text-slate-400" />
+        <button className="lg:hidden p-2 rounded-lg hover:bg-slate-100">
+          <Menu className="h-6 w-6 text-slate-500" />
         </button>
 
         {/* Market Indices */}
@@ -58,15 +58,15 @@ export function TopBar() {
                 isMarketOpen ? "bg-green-500 animate-pulse" : "bg-red-500"
               }`}
             />
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               {isMarketOpen ? "Market Open" : "Market Closed"}
             </span>
           </div>
           <div className="flex items-center gap-4">
             {indices.map((index) => (
               <div key={index.name} className="flex items-center gap-2">
-                <span className="text-sm text-slate-400">{index.name}</span>
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm text-slate-500">{index.name}</span>
+                <span className="text-sm font-medium text-slate-900">
                   {index.value.toLocaleString("en-IN")}
                 </span>
                 <span
@@ -94,9 +94,9 @@ export function TopBar() {
             <input
               type="text"
               placeholder="Search stocks, themes, or ask AI..."
-              className="w-full h-10 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-spike-primary/50 focus:border-spike-primary"
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-spike-primary/50 focus:border-spike-primary"
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 text-xs text-slate-400 bg-white/5 rounded">
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 text-xs text-slate-500 bg-slate-200 rounded">
               ⌘K
             </kbd>
           </div>
@@ -105,18 +105,18 @@ export function TopBar() {
         {/* Right section */}
         <div className="flex items-center gap-4">
           {/* Notifications */}
-          <button className="relative p-2 rounded-lg hover:bg-white/5 transition">
-            <Bell className="h-5 w-5 text-slate-400" />
+          <button className="relative p-2 rounded-lg hover:bg-slate-100 transition">
+            <Bell className="h-5 w-5 text-slate-500" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-spike-primary rounded-full" />
           </button>
 
           {/* User */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
-              <div className="text-sm font-medium text-white">
+              <div className="text-sm font-medium text-slate-900">
                 {user?.firstName || "Investor"}
               </div>
-              <div className="text-xs text-slate-400">Pro Plan</div>
+              <div className="text-xs text-slate-500">Pro Plan</div>
             </div>
             <UserButton
               afterSignOutUrl="/"
