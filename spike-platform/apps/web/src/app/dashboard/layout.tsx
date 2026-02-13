@@ -1,7 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { Sidebar } from "@/components/layout/sidebar";
-import { TopBar } from "@/components/layout/topbar";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 
 export default async function DashboardLayout({
   children,
@@ -14,13 +13,5 @@ export default async function DashboardLayout({
     redirect("/sign-in");
   }
 
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F5FFFC" }}>
-      <Sidebar />
-      <div className="lg:pl-64">
-        <TopBar />
-        <main className="py-5 px-6">{children}</main>
-      </div>
-    </div>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 }

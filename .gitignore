@@ -103,3 +103,6 @@ local_config.yaml
 secrets.yaml
 .env
 .env.local
+
+# Claude Code
+.claude/
