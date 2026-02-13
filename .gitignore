@@ -106,3 +106,10 @@ secrets.yaml
 
 # Claude Code
 .claude/
+
+# Node modules (global)
+node_modules/
+
+# Separate projects / experiments
+pixel-perfect-replica/
+spike-platform/packages/video/
