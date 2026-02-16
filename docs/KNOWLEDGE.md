@@ -502,7 +502,7 @@ lsof -ti:8000
 ## APPENDIX C: CONTACTS & RESOURCES
 
 - **Founder:** Jayaditya Reddy Yeruva
-- **Co-founder:** Adip
+- **Co-founder:** Adip Krishna Guduru
 - **Repository:** /Users/jay/FinSense-1
 - **Branch:** experimental/reward-tuning
 
