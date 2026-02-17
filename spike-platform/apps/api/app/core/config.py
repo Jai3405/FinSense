@@ -53,6 +53,12 @@ class Settings(BaseSettings):
     TRUEDATA_USER: str = ""
     TRUEDATA_PASSWORD: str = ""
 
+    # ----- Angel One SmartAPI -----
+    ANGEL_ONE_API_KEY: str = ""
+    ANGEL_ONE_CLIENT_ID: str = ""
+    ANGEL_ONE_PASSWORD: str = ""
+    ANGEL_ONE_TOTP_SECRET: str = ""
+
     # ----- Rate Limiting -----
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_PERIOD: int = 60  # seconds
