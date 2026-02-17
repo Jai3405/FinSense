@@ -2,12 +2,37 @@
 Stock endpoints - Stock information, quotes, and search.
 """
 
-from fastapi import APIRouter, Depends, Query
+import logging
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from app.api.v1.deps.auth import get_current_user, get_optional_user, ClerkUser
+from app.services.market_data import get_market_data_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Period mapping: frontend format -> yfinance format
+PERIOD_MAP = {
+    "1D": "1d",
+    "1W": "5d",
+    "1M": "1mo",
+    "3M": "3mo",
+    "6M": "6mo",
+    "1Y": "1y",
+    "5Y": "5y",
+    "MAX": "max",
+}
+
+
+def ensure_ns_suffix(symbol: str) -> str:
+    """Add .NS suffix for NSE stocks if not already present."""
+    if not symbol.endswith((".NS", ".BO")):
+        return f"{symbol}.NS"
+    return symbol
 
 
 class StockQuote(BaseModel):
@@ -65,36 +90,24 @@ async def search_stocks(
     Search stocks by symbol or name.
     Returns matching stocks from NSE/BSE.
     """
-    # TODO: Implement actual search against database/Meilisearch
-    # Mock response for now
-    mock_results = [
-        StockSearchResult(
-            symbol="RELIANCE",
-            name="Reliance Industries Ltd",
-            exchange="NSE",
-            sector="Oil & Gas",
-        ),
-        StockSearchResult(
-            symbol="TCS",
-            name="Tata Consultancy Services Ltd",
-            exchange="NSE",
-            sector="Information Technology",
-        ),
-        StockSearchResult(
-            symbol="HDFCBANK",
-            name="HDFC Bank Ltd",
-            exchange="NSE",
-            sector="Financial Services",
-        ),
-    ]
-
-    # Filter by query
-    q_lower = q.lower()
-    return [
-        r
-        for r in mock_results
-        if q_lower in r.symbol.lower() or q_lower in r.name.lower()
-    ][:limit]
+    try:
+        market_data = get_market_data_service()
+        results = await market_data.search_stocks(q)
+        return [
+            StockSearchResult(
+                symbol=r.symbol,
+                name=r.name,
+                exchange=r.exchange,
+                sector=r.type,  # SearchResult.type maps to sector field
+            )
+            for r in results[:limit]
+        ]
+    except Exception as e:
+        logger.error(f"Stock search failed for query '{q}': {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Market data service is temporarily unavailable. Please try again.",
+        )
 
 
 @router.get("/{symbol}/quote", response_model=StockQuote)
@@ -106,21 +119,30 @@ async def get_stock_quote(
     Get real-time quote for a stock.
     Includes current price, change, volume, and OHLC.
     """
-    # TODO: Implement real market data fetch
-    return StockQuote(
-        symbol=symbol.upper(),
-        name=f"{symbol.upper()} Stock",
-        exchange="NSE",
-        price=2456.75,
-        change=28.50,
-        change_percent=1.17,
-        volume=5234567,
-        high=2478.90,
-        low=2432.10,
-        open=2445.00,
-        prev_close=2428.25,
-        timestamp="2024-01-28T15:30:00+05:30",
-    )
+    try:
+        market_data = get_market_data_service()
+        yf_symbol = ensure_ns_suffix(symbol)
+        quote = await market_data.get_stock_quote(yf_symbol)
+        return StockQuote(
+            symbol=symbol.upper(),
+            name=quote.name,
+            exchange="NSE",
+            price=quote.price,
+            change=quote.change,
+            change_percent=quote.change_percent,
+            volume=quote.volume,
+            high=quote.high,
+            low=quote.low,
+            open=quote.open,
+            prev_close=quote.prev_close,
+            timestamp=datetime.now(timezone.utc).isoformat(),
+        )
+    except Exception as e:
+        logger.error(f"Failed to fetch quote for {symbol}: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Unable to fetch quote for {symbol}. Market data service may be unavailable.",
+        )
 
 
 @router.get("/{symbol}/info", response_model=StockInfo)
@@ -132,23 +154,41 @@ async def get_stock_info(
     Get detailed information about a stock.
     Requires authentication.
     """
-    # TODO: Implement real data fetch
-    return StockInfo(
-        symbol=symbol.upper(),
-        name=f"{symbol.upper()} Ltd",
-        exchange="NSE",
-        sector="Technology",
-        industry="IT Services",
-        market_cap=15000000000000,
-        pe_ratio=28.5,
-        pb_ratio=8.2,
-        dividend_yield=1.2,
-        eps=85.50,
-        high_52w=2890.00,
-        low_52w=1980.00,
-        avg_volume=4500000,
-        description="Leading company in its sector.",
-    )
+    try:
+        market_data = get_market_data_service()
+        yf_symbol = ensure_ns_suffix(symbol)
+        quote = await market_data.get_stock_quote(yf_symbol)
+
+        # Fetch extra info directly from yfinance ticker
+        import yfinance as yf
+
+        ticker = yf.Ticker(yf_symbol)
+        info = ticker.info
+
+        return StockInfo(
+            symbol=symbol.upper(),
+            name=quote.name,
+            exchange="NSE",
+            sector=info.get("sector", ""),
+            industry=info.get("industry", ""),
+            market_cap=quote.market_cap or 0,
+            pe_ratio=quote.pe_ratio,
+            pb_ratio=info.get("priceToBook"),
+            dividend_yield=info.get("dividendYield"),
+            eps=info.get("trailingEps"),
+            high_52w=quote.week_52_high or 0,
+            low_52w=quote.week_52_low or 0,
+            avg_volume=info.get("averageVolume", 0) or 0,
+            description=info.get("longBusinessSummary"),
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch info for {symbol}: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Unable to fetch info for {symbol}. Market data service may be unavailable.",
+        )
 
 
 @router.get("/{symbol}/history")
@@ -162,30 +202,34 @@ async def get_stock_history(
     Get historical OHLCV data for a stock.
     Requires authentication.
     """
-    # TODO: Implement real historical data fetch
-    return {
-        "symbol": symbol.upper(),
-        "period": period,
-        "interval": interval,
-        "data": [
-            {
-                "timestamp": "2024-01-28",
-                "open": 2445.00,
-                "high": 2478.90,
-                "low": 2432.10,
-                "close": 2456.75,
-                "volume": 5234567,
-            },
-            {
-                "timestamp": "2024-01-27",
-                "open": 2420.00,
-                "high": 2450.00,
-                "low": 2415.00,
-                "close": 2428.25,
-                "volume": 4890234,
-            },
-        ],
-    }
+    try:
+        market_data = get_market_data_service()
+        yf_symbol = ensure_ns_suffix(symbol)
+        yf_period = PERIOD_MAP.get(period, "1mo")
+
+        bars = await market_data.get_historical(yf_symbol, yf_period, interval)
+        return {
+            "symbol": symbol.upper(),
+            "period": period,
+            "interval": interval,
+            "data": [
+                {
+                    "timestamp": bar.timestamp.isoformat(),
+                    "open": bar.open,
+                    "high": bar.high,
+                    "low": bar.low,
+                    "close": bar.close,
+                    "volume": bar.volume,
+                }
+                for bar in bars
+            ],
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch history for {symbol}: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Unable to fetch history for {symbol}. Market data service may be unavailable.",
+        )
 
 
 @router.get("/trending")
@@ -196,21 +240,23 @@ async def get_trending_stocks(
     """
     Get trending stocks based on volume and price movement.
     """
-    return [
-        {
-            "symbol": "TATAELXSI",
-            "name": "Tata Elxsi",
-            "price": 7245.50,
-            "change_percent": 8.09,
-            "volume": "2.3L",
-            "trend_score": 95,
-        },
-        {
-            "symbol": "IRCTC",
-            "name": "IRCTC",
-            "price": 892.75,
-            "change_percent": 6.47,
-            "volume": "5.1L",
-            "trend_score": 88,
-        },
-    ]
+    try:
+        market_data = get_market_data_service()
+        quotes = await market_data.get_trending(limit)
+        return [
+            {
+                "symbol": q.symbol.replace(".NS", "").replace(".BO", ""),
+                "name": q.name,
+                "price": q.price,
+                "change_percent": q.change_percent,
+                "volume": q.volume,
+                "trend_score": round(abs(q.change_percent) * 10, 1),
+            }
+            for q in quotes
+        ]
+    except Exception as e:
+        logger.error(f"Failed to fetch trending stocks: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to fetch trending stocks. Market data service may be unavailable.",
+        )

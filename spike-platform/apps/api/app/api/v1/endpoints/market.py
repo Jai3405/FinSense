@@ -2,10 +2,15 @@
 Market data endpoints - Indices, sectors, and market-wide analysis.
 """
 
-from fastapi import APIRouter, Depends
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.api.v1.deps.auth import get_optional_user, ClerkUser
+from app.services.market_data import get_market_data_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -61,83 +66,27 @@ async def get_market_indices(
     """
     Get live data for major Indian market indices.
     """
-    return [
-        # Indian Indices
-        MarketIndex(
-            symbol="NIFTY50",
-            name="NIFTY 50",
-            value=22456.80,
-            change=185.40,
-            change_percent=0.83,
-            high=22510.00,
-            low=22280.00,
-        ),
-        MarketIndex(
-            symbol="SENSEX",
-            name="SENSEX",
-            value=73890.25,
-            change=478.50,
-            change_percent=0.65,
-            high=74050.00,
-            low=73450.00,
-        ),
-        MarketIndex(
-            symbol="BANKNIFTY",
-            name="BANK NIFTY",
-            value=48250.00,
-            change=-185.75,
-            change_percent=-0.38,
-            high=48600.00,
-            low=48100.00,
-        ),
-        MarketIndex(
-            symbol="NIFTYIT",
-            name="NIFTY IT",
-            value=38950.00,
-            change=425.50,
-            change_percent=1.10,
-            high=39050.00,
-            low=38500.00,
-        ),
-        # Global Indices
-        MarketIndex(
-            symbol="DJI",
-            name="DOW",
-            value=38654.42,
-            change=125.69,
-            change_percent=0.33,
-            high=38720.00,
-            low=38520.00,
-        ),
-        MarketIndex(
-            symbol="IXIC",
-            name="NASDAQ",
-            value=15628.95,
-            change=183.02,
-            change_percent=1.19,
-            high=15680.00,
-            low=15450.00,
-        ),
-        # Commodities
-        MarketIndex(
-            symbol="GOLD",
-            name="GOLD",
-            value=2035.80,
-            change=-8.40,
-            change_percent=-0.41,
-            high=2048.00,
-            low=2028.00,
-        ),
-        MarketIndex(
-            symbol="CRUDE",
-            name="CRUDE",
-            value=76.85,
-            change=1.24,
-            change_percent=1.64,
-            high=77.50,
-            low=75.80,
-        ),
-    ]
+    try:
+        market_data = get_market_data_service()
+        indices = await market_data.get_market_indices()
+        return [
+            MarketIndex(
+                symbol=idx.symbol,
+                name=idx.name,
+                value=idx.value,
+                change=idx.change,
+                change_percent=idx.change_percent,
+                high=0,  # yfinance indices don't always provide intraday high/low
+                low=0,
+            )
+            for idx in indices
+        ]
+    except Exception as e:
+        logger.error(f"Failed to fetch market indices: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to fetch market indices. Market data service may be unavailable.",
+        )
 
 
 @router.get("/sectors", response_model=list[SectorPerformance])
@@ -147,32 +96,24 @@ async def get_sector_performance(
     """
     Get performance of all sectors.
     """
-    return [
-        SectorPerformance(
-            name="Information Technology",
-            change_percent=2.4,
-            top_gainer="TATAELXSI",
-            top_loser="MPHASIS",
-        ),
-        SectorPerformance(
-            name="Banking",
-            change_percent=-0.8,
-            top_gainer="ICICIBANK",
-            top_loser="BANDHANBNK",
-        ),
-        SectorPerformance(
-            name="Pharmaceuticals",
-            change_percent=1.2,
-            top_gainer="SUNPHARMA",
-            top_loser="CIPLA",
-        ),
-        SectorPerformance(
-            name="Metals",
-            change_percent=3.1,
-            top_gainer="TATASTEEL",
-            top_loser="HINDALCO",
-        ),
-    ]
+    try:
+        market_data = get_market_data_service()
+        sectors = await market_data.get_sector_performance()
+        return [
+            SectorPerformance(
+                name=s.name,
+                change_percent=s.change_percent,
+                top_gainer=s.top_gainer,
+                top_loser=s.top_loser,
+            )
+            for s in sectors
+        ]
+    except Exception as e:
+        logger.error(f"Failed to fetch sector performance: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to fetch sector performance. Market data service may be unavailable.",
+        )
 
 
 @router.get("/regime", response_model=MarketRegimeResponse)
@@ -191,6 +132,7 @@ async def get_market_regime(
     - volatile: High volatility, unclear direction
     - recovery: Transitioning from bear to bull
     """
+    # TODO: Phase 2 - Replace with ML-based regime detection
     return MarketRegimeResponse(
         regime="bull_strong",
         confidence=78,
@@ -215,6 +157,7 @@ async def get_market_breadth(
     """
     Get market breadth indicators.
     """
+    # TODO: Phase 2 - Replace with real breadth data
     advances = 1245
     declines = 892
     return MarketBreadth(
@@ -234,6 +177,7 @@ async def get_fii_dii_data(
     """
     Get FII/DII investment data.
     """
+    # TODO: Phase 2 - Replace with real scraped FII/DII data
     return {
         "date": "2024-01-28",
         "fii": {
@@ -260,13 +204,12 @@ async def get_market_status(
     """
     Get current market status (open/closed) and trading hours.
     """
-    return {
-        "is_open": True,
-        "exchange": "NSE",
-        "session": "regular",
-        "next_open": "2024-01-29T09:15:00+05:30",
-        "next_close": "2024-01-28T15:30:00+05:30",
-        "holidays_upcoming": [
-            {"date": "2024-01-26", "name": "Republic Day"},
-        ],
-    }
+    try:
+        market_data = get_market_data_service()
+        return await market_data.get_market_status()
+    except Exception as e:
+        logger.error(f"Failed to fetch market status: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to fetch market status. Market data service may be unavailable.",
+        )
