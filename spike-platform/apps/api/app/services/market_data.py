@@ -1,10 +1,12 @@
 """Unified market data service for Indian stock markets."""
 
 import logging
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 
 import yfinance as yf
+
+from app.services.cache import get_cache_service
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +126,12 @@ class MarketDataService:
 
     async def get_stock_quote(self, symbol: str) -> StockQuote:
         """Get real-time quote for a stock."""
+        cache = get_cache_service()
+        if cache:
+            cached = await cache.get_stock_quote(symbol)
+            if cached:
+                return StockQuote(**cached)
+
         try:
             ticker = yf.Ticker(symbol)
             info = ticker.info
@@ -140,7 +148,7 @@ class MarketDataService:
             change = price - prev_close if price and prev_close else 0
             change_pct = (change / prev_close * 100) if prev_close else 0
 
-            return StockQuote(
+            quote = StockQuote(
                 symbol=symbol,
                 name=info.get("shortName", "") or info.get("longName", symbol),
                 price=round(price, 2),
@@ -156,6 +164,11 @@ class MarketDataService:
                 week_52_high=info.get("fiftyTwoWeekHigh"),
                 week_52_low=info.get("fiftyTwoWeekLow"),
             )
+
+            if cache:
+                await cache.set_stock_quote(symbol, asdict(quote))
+
+            return quote
         except Exception as e:
             logger.error(f"Error fetching quote for {symbol}: {e}")
             raise
@@ -164,11 +177,17 @@ class MarketDataService:
         self, symbol: str, period: str = "1mo", interval: str = "1d"
     ) -> list[OHLCV]:
         """Get historical OHLCV data."""
+        cache = get_cache_service()
+        if cache:
+            cached = await cache.get_historical(symbol, period, interval)
+            if cached:
+                return [OHLCV(**item) for item in cached]
+
         try:
             ticker = yf.Ticker(symbol)
             df = ticker.history(period=period, interval=interval)
 
-            return [
+            result = [
                 OHLCV(
                     timestamp=idx.to_pydatetime(),
                     open=round(row["Open"], 2),
@@ -179,12 +198,25 @@ class MarketDataService:
                 )
                 for idx, row in df.iterrows()
             ]
+
+            if cache:
+                await cache.set_historical(
+                    symbol, period, interval, [asdict(item) for item in result]
+                )
+
+            return result
         except Exception as e:
             logger.error(f"Error fetching history for {symbol}: {e}")
             raise
 
     async def get_market_indices(self) -> list[IndexData]:
         """Get major Indian market indices."""
+        cache = get_cache_service()
+        if cache:
+            cached = await cache.get_market_indices()
+            if cached:
+                return [IndexData(**item) for item in cached]
+
         results = []
         for symbol, name in self.INDICES.items():
             try:
@@ -212,10 +244,20 @@ class MarketDataService:
                 )
             except Exception as e:
                 logger.warning(f"Could not fetch index {symbol}: {e}")
+
+        if cache and results:
+            await cache.set_market_indices([asdict(item) for item in results])
+
         return results
 
     async def get_sector_performance(self) -> list[SectorData]:
         """Get sector performance data."""
+        cache = get_cache_service()
+        if cache:
+            cached = await cache.get_sector_performance()
+            if cached:
+                return [SectorData(**item) for item in cached]
+
         results = []
         for key, sector in self.SECTORS.items():
             try:
@@ -237,10 +279,20 @@ class MarketDataService:
                 )
             except Exception as e:
                 logger.warning(f"Could not fetch sector {key}: {e}")
+
+        if cache and results:
+            await cache.set_sector_performance([asdict(item) for item in results])
+
         return results
 
     async def get_trending(self, limit: int = 10) -> list[StockQuote]:
         """Get trending stocks (top movers by change percent from popular stocks)."""
+        cache = get_cache_service()
+        if cache:
+            cached = await cache.get_trending()
+            if cached:
+                return [StockQuote(**item) for item in cached]
+
         quotes = []
         for symbol in self.POPULAR_STOCKS[:limit]:
             try:
@@ -250,6 +302,10 @@ class MarketDataService:
                 continue
         # Sort by absolute change percent (most moved)
         quotes.sort(key=lambda q: abs(q.change_percent), reverse=True)
+
+        if cache and quotes:
+            await cache.set_trending([asdict(q) for q in quotes])
+
         return quotes
 
     async def search_stocks(self, query: str) -> list[SearchResult]:
