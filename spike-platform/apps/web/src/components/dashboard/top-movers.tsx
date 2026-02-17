@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowUpRight, ArrowDownRight, Target } from "lucide-react";
 import { cn, formatCurrency, getFinScoreColor } from "@/lib/utils";
+import { useTrendingStocks } from "@/lib/api/hooks";
 
 // Color constants
 const colors = {
@@ -32,102 +33,42 @@ interface Stock {
 
 export function TopMovers() {
   const [activeTab, setActiveTab] = useState<"gainers" | "losers">("gainers");
+  const { data: trendingData, isLoading, error } = useTrendingStocks(10);
 
-  const gainers: Stock[] = [
-    {
-      symbol: "TATAELXSI",
-      name: "Tata Elxsi",
-      price: 7245.5,
-      change: 542.3,
-      changePercent: 8.09,
-      volume: "2.3L",
-      finScore: 8.2,
-    },
-    {
-      symbol: "IRCTC",
-      name: "IRCTC",
-      price: 892.75,
-      change: 54.25,
-      changePercent: 6.47,
-      volume: "5.1L",
-      finScore: 7.4,
-    },
-    {
-      symbol: "ZOMATO",
-      name: "Zomato",
-      price: 178.9,
-      change: 9.8,
-      changePercent: 5.79,
-      volume: "12.8L",
-      finScore: 6.8,
-    },
-    {
-      symbol: "PAYTM",
-      name: "One97 Comm.",
-      price: 845.6,
-      change: 42.3,
-      changePercent: 5.27,
-      volume: "8.4L",
-      finScore: 5.2,
-    },
-    {
-      symbol: "ADANIENT",
-      name: "Adani Ent.",
-      price: 2890.45,
-      change: 125.8,
-      changePercent: 4.55,
-      volume: "3.2L",
-      finScore: 6.1,
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+      >
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-full rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-3/4 rounded" style={{ backgroundColor: colors.bgMint }} />
+        </div>
+      </div>
+    );
+  }
 
-  const losers: Stock[] = [
-    {
-      symbol: "TATASTEEL",
-      name: "Tata Steel",
-      price: 142.35,
-      change: -8.45,
-      changePercent: -5.6,
-      volume: "15.2L",
-      finScore: 5.8,
-    },
-    {
-      symbol: "HINDALCO",
-      name: "Hindalco",
-      price: 485.2,
-      change: -24.8,
-      changePercent: -4.86,
-      volume: "6.8L",
-      finScore: 6.2,
-    },
-    {
-      symbol: "JSWSTEEL",
-      name: "JSW Steel",
-      price: 845.6,
-      change: -38.5,
-      changePercent: -4.35,
-      volume: "4.5L",
-      finScore: 5.5,
-    },
-    {
-      symbol: "COALINDIA",
-      name: "Coal India",
-      price: 428.9,
-      change: -18.2,
-      changePercent: -4.07,
-      volume: "7.2L",
-      finScore: 6.8,
-    },
-    {
-      symbol: "VEDL",
-      name: "Vedanta",
-      price: 298.45,
-      change: -11.55,
-      changePercent: -3.73,
-      volume: "9.1L",
-      finScore: 4.9,
-    },
-  ];
+  const allStocks: Stock[] = trendingData
+    ? trendingData.map((t) => ({
+        symbol: t.symbol,
+        name: t.name,
+        price: t.price,
+        change: (t.change_percent / 100) * t.price, // derive absolute change from percent
+        changePercent: t.change_percent,
+        volume: t.volume,
+        finScore: 0.0, // Phase 2
+      }))
+    : [];
+
+  const gainers = allStocks
+    .filter((s) => s.changePercent > 0)
+    .sort((a, b) => b.changePercent - a.changePercent);
+
+  const losers = allStocks
+    .filter((s) => s.changePercent < 0)
+    .sort((a, b) => a.changePercent - b.changePercent);
 
   const stocks = activeTab === "gainers" ? gainers : losers;
 
@@ -167,69 +108,75 @@ export function TopMovers() {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {stocks.map((stock) => (
-          <div
-            key={stock.symbol}
-            className="flex items-center justify-between p-4 rounded-xl transition cursor-pointer"
-            style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
-          >
-            <div className="flex items-center gap-4">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: colors.border }}
-              >
-                <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                  {stock.symbol.slice(0, 2)}
-                </span>
-              </div>
-              <div>
-                <p className="font-medium" style={{ color: colors.textPrimary }}>{stock.symbol}</p>
-                <p className="text-sm" style={{ color: colors.textMuted }}>{stock.name}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6">
-              {/* FinScore */}
-              <div className="flex items-center gap-1.5">
-                <Target className={cn("w-4 h-4", getFinScoreColor(stock.finScore))} />
-                <span className={cn("text-sm font-medium", getFinScoreColor(stock.finScore))}>
-                  {stock.finScore.toFixed(1)}
-                </span>
-              </div>
-
-              {/* Volume */}
-              <div className="text-right hidden sm:block">
-                <p className="text-sm" style={{ color: colors.textMuted }}>Vol</p>
-                <p className="text-sm" style={{ color: colors.textPrimary }}>{stock.volume}</p>
-              </div>
-
-              {/* Price & Change */}
-              <div className="text-right min-w-[100px]">
-                <p className="font-medium" style={{ color: colors.textPrimary }}>
-                  {formatCurrency(stock.price)}
-                </p>
+      {error || stocks.length === 0 ? (
+        <p className="text-sm text-center py-4" style={{ color: colors.textMuted }}>
+          No {activeTab} data available
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {stocks.map((stock) => (
+            <div
+              key={stock.symbol}
+              className="flex items-center justify-between p-4 rounded-xl transition cursor-pointer"
+              style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
+            >
+              <div className="flex items-center gap-4">
                 <div
-                  className="flex items-center justify-end gap-1 text-sm"
-                  style={{ color: stock.change >= 0 ? colors.gain : colors.loss }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: colors.border }}
                 >
-                  {stock.change >= 0 ? (
-                    <ArrowUpRight className="w-4 h-4" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4" />
-                  )}
-                  <span>
-                    {stock.change >= 0 ? "+" : ""}
-                    {stock.changePercent.toFixed(2)}%
+                  <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                    {stock.symbol.slice(0, 2)}
                   </span>
+                </div>
+                <div>
+                  <p className="font-medium" style={{ color: colors.textPrimary }}>{stock.symbol}</p>
+                  <p className="text-sm" style={{ color: colors.textMuted }}>{stock.name}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6">
+                {/* FinScore */}
+                <div className="flex items-center gap-1.5">
+                  <Target className={cn("w-4 h-4", getFinScoreColor(stock.finScore))} />
+                  <span className={cn("text-sm font-medium", getFinScoreColor(stock.finScore))}>
+                    {stock.finScore.toFixed(1)}
+                  </span>
+                </div>
+
+                {/* Volume */}
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm" style={{ color: colors.textMuted }}>Vol</p>
+                  <p className="text-sm" style={{ color: colors.textPrimary }}>{stock.volume}</p>
+                </div>
+
+                {/* Price & Change */}
+                <div className="text-right min-w-[100px]">
+                  <p className="font-medium" style={{ color: colors.textPrimary }}>
+                    {formatCurrency(stock.price)}
+                  </p>
+                  <div
+                    className="flex items-center justify-end gap-1 text-sm"
+                    style={{ color: stock.change >= 0 ? colors.gain : colors.loss }}
+                  >
+                    {stock.change >= 0 ? (
+                      <ArrowUpRight className="w-4 h-4" />
+                    ) : (
+                      <ArrowDownRight className="w-4 h-4" />
+                    )}
+                    <span>
+                      {stock.change >= 0 ? "+" : ""}
+                      {stock.changePercent.toFixed(2)}%
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

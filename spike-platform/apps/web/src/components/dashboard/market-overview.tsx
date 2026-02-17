@@ -1,6 +1,7 @@
 "use client";
 
-import { TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { TrendingUp, Activity } from "lucide-react";
+import { useSectorPerformance } from "@/lib/api/hooks";
 
 // Color constants
 const colors = {
@@ -24,28 +25,40 @@ interface SectorData {
 }
 
 export function MarketOverview() {
-  const sectors: SectorData[] = [
-    { name: "IT", change: 2.4 },
-    { name: "Banks", change: -0.8 },
-    { name: "Pharma", change: 1.2 },
-    { name: "Auto", change: 0.5 },
-    { name: "FMCG", change: -0.3 },
-    { name: "Metal", change: 3.1 },
-    { name: "Energy", change: 1.8 },
-    { name: "Realty", change: -1.5 },
-  ];
+  const { data: sectorData, isLoading, error } = useSectorPerformance();
 
+  const sectors: SectorData[] = sectorData
+    ? sectorData.map((sp) => ({ name: sp.name, change: sp.change_percent }))
+    : [];
+
+  // Keep as mock for now (breadth endpoint is mock)
   const marketBreadth = {
     advances: 1245,
     declines: 892,
     unchanged: 156,
   };
 
+  // Keep as mock for now (regime endpoint is mock)
   const regimeStatus = {
     current: "Bullish",
     confidence: 78,
     trend: "Uptrend",
   };
+
+  if (isLoading) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+      >
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-full rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-3/4 rounded" style={{ backgroundColor: colors.bgMint }} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -154,26 +167,32 @@ export function MarketOverview() {
       {/* Sector Performance */}
       <div>
         <p className="text-sm mb-3" style={{ color: colors.textMuted }}>Sector Performance</p>
-        <div className="grid grid-cols-4 gap-3">
-          {sectors.map((sector) => (
-            <div
-              key={sector.name}
-              className="p-3 rounded-xl text-center cursor-pointer transition-colors"
-              style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
-            >
-              <p className="text-sm mb-1" style={{ color: colors.textSecondary }}>{sector.name}</p>
-              <p
-                className="text-sm font-semibold"
-                style={{ color: sector.change >= 0 ? colors.gain : colors.loss }}
+        {error || sectors.length === 0 ? (
+          <p className="text-sm text-center py-4" style={{ color: colors.textMuted }}>
+            Sector data unavailable
+          </p>
+        ) : (
+          <div className="grid grid-cols-4 gap-3">
+            {sectors.map((sector) => (
+              <div
+                key={sector.name}
+                className="p-3 rounded-xl text-center cursor-pointer transition-colors"
+                style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
               >
-                {sector.change >= 0 ? "+" : ""}
-                {sector.change.toFixed(1)}%
-              </p>
-            </div>
-          ))}
-        </div>
+                <p className="text-sm mb-1" style={{ color: colors.textSecondary }}>{sector.name}</p>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: sector.change >= 0 ? colors.gain : colors.loss }}
+                >
+                  {sector.change >= 0 ? "+" : ""}
+                  {sector.change.toFixed(1)}%
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

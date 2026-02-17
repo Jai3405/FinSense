@@ -2,6 +2,7 @@
 
 import { Plus, MoreVertical, Target } from "lucide-react";
 import { cn, formatCurrency, getFinScoreColor } from "@/lib/utils";
+import { useWatchlist } from "@/lib/api/hooks";
 
 // Color constants
 const colors = {
@@ -17,66 +18,34 @@ const colors = {
   loss: "#F45B69",
 };
 
-interface WatchlistStock {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  finScore: number;
-}
-
 export function WatchlistWidget() {
-  const watchlist: WatchlistStock[] = [
-    {
-      symbol: "RELIANCE",
-      name: "Reliance Industries",
-      price: 2456.75,
-      change: 28.5,
-      changePercent: 1.17,
-      finScore: 8.4,
-    },
-    {
-      symbol: "TCS",
-      name: "Tata Consultancy",
-      price: 3845.2,
-      change: -12.3,
-      changePercent: -0.32,
-      finScore: 7.9,
-    },
-    {
-      symbol: "HDFCBANK",
-      name: "HDFC Bank",
-      price: 1678.9,
-      change: 15.8,
-      changePercent: 0.95,
-      finScore: 8.1,
-    },
-    {
-      symbol: "INFY",
-      name: "Infosys",
-      price: 1523.45,
-      change: 8.9,
-      changePercent: 0.59,
-      finScore: 7.6,
-    },
-    {
-      symbol: "WIPRO",
-      name: "Wipro Limited",
-      price: 456.8,
-      change: -5.2,
-      changePercent: -1.13,
-      finScore: 6.4,
-    },
-    {
-      symbol: "ICICIBANK",
-      name: "ICICI Bank",
-      price: 1045.6,
-      change: 22.4,
-      changePercent: 2.19,
-      finScore: 7.8,
-    },
-  ];
+  const { data: watchlistData, isLoading, error } = useWatchlist();
+
+  if (isLoading) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+      >
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-full rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-3/4 rounded" style={{ backgroundColor: colors.bgMint }} />
+        </div>
+      </div>
+    );
+  }
+
+  const watchlist = watchlistData
+    ? watchlistData.map((s) => ({
+        symbol: s.symbol,
+        name: s.name,
+        price: s.price,
+        change: s.change,
+        changePercent: s.change_percent,
+        finScore: s.finscore,
+      }))
+    : [];
 
   return (
     <div
@@ -97,65 +66,76 @@ export function WatchlistWidget() {
         </button>
       </div>
 
-      <div className="space-y-2">
-        {watchlist.map((stock) => (
-          <div
-            key={stock.symbol}
-            className="flex items-center justify-between p-3 rounded-xl transition cursor-pointer group"
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
-              >
-                <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                  {stock.symbol.slice(0, 2)}
-                </span>
-              </div>
-              <div>
-                <p className="font-medium text-sm" style={{ color: colors.textPrimary }}>
-                  {stock.symbol}
-                </p>
-                <div className="flex items-center gap-1.5">
-                  <Target
-                    className={cn("w-3 h-3", getFinScoreColor(stock.finScore))}
-                  />
-                  <span
-                    className={cn("text-xs", getFinScoreColor(stock.finScore))}
-                  >
-                    {stock.finScore.toFixed(1)}
+      {error || watchlist.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
+            No stocks in your watchlist
+          </p>
+          <p className="text-sm" style={{ color: colors.accent }}>
+            Add stocks to track them here
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {watchlist.map((stock) => (
+            <div
+              key={stock.symbol}
+              className="flex items-center justify-between p-3 rounded-xl transition cursor-pointer group"
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}` }}
+                >
+                  <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                    {stock.symbol.slice(0, 2)}
                   </span>
                 </div>
+                <div>
+                  <p className="font-medium text-sm" style={{ color: colors.textPrimary }}>
+                    {stock.symbol}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <Target
+                      className={cn("w-3 h-3", getFinScoreColor(stock.finScore))}
+                    />
+                    <span
+                      className={cn("text-xs", getFinScoreColor(stock.finScore))}
+                    >
+                      {stock.finScore.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>
-                  {formatCurrency(stock.price)}
-                </p>
-                <p
-                  className="text-xs"
-                  style={{ color: stock.change >= 0 ? colors.gain : colors.loss }}
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium" style={{ color: colors.textPrimary }}>
+                    {formatCurrency(stock.price)}
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{ color: stock.change >= 0 ? colors.gain : colors.loss }}
+                  >
+                    {stock.change >= 0 ? "+" : ""}
+                    {stock.changePercent.toFixed(2)}%
+                  </p>
+                </div>
+                <button
+                  className="p-1 rounded-lg opacity-0 group-hover:opacity-100 transition"
+                  style={{ color: colors.textMuted }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                 >
-                  {stock.change >= 0 ? "+" : ""}
-                  {stock.changePercent.toFixed(2)}%
-                </p>
+                  <MoreVertical className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                className="p-1 rounded-lg opacity-0 group-hover:opacity-100 transition"
-                style={{ color: colors.textMuted }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgMint)}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-              >
-                <MoreVertical className="w-4 h-4" />
-              </button>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <button
         className="w-full mt-4 py-3 rounded-xl border border-dashed text-sm transition-colors"

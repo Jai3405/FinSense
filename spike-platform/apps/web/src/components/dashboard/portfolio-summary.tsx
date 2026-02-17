@@ -2,6 +2,7 @@
 
 import { ArrowDownRight, ArrowUpRight, TrendingUp } from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/utils";
+import { usePortfolioSummary } from "@/lib/api/hooks";
 
 // Color constants
 const colors = {
@@ -18,24 +19,52 @@ const colors = {
   lossBg: "#FEF0F1",
 };
 
-interface PortfolioData {
-  totalValue: number;
-  invested: number;
-  returns: number;
-  returnsPercent: number;
-  todayChange: number;
-  todayChangePercent: number;
-}
-
 export function PortfolioSummary() {
-  // TODO: Fetch from API
-  const portfolio: PortfolioData = {
-    totalValue: 1245678,
-    invested: 1000000,
-    returns: 245678,
-    returnsPercent: 24.57,
-    todayChange: 29456,
-    todayChangePercent: 2.42,
+  const { data: portfolioData, isLoading, error } = usePortfolioSummary();
+
+  if (isLoading) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+      >
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-full rounded" style={{ backgroundColor: colors.bgMint }} />
+          <div className="h-4 w-3/4 rounded" style={{ backgroundColor: colors.bgMint }} />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !portfolioData) {
+    return (
+      <div
+        className="rounded-2xl p-6"
+        style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+      >
+        <h2 className="text-lg font-semibold mb-4" style={{ color: colors.textPrimary }}>
+          Portfolio Summary
+        </h2>
+        <div className="text-center py-8">
+          <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
+            No holdings yet
+          </p>
+          <p className="text-sm" style={{ color: colors.accent }}>
+            Add your first holding to get started
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const portfolio = {
+    totalValue: portfolioData.total_value,
+    invested: portfolioData.invested,
+    returns: portfolioData.returns,
+    returnsPercent: portfolioData.returns_percent,
+    todayChange: portfolioData.today_change,
+    todayChangePercent: portfolioData.today_change_percent,
   };
 
   const isPositive = portfolio.todayChange >= 0;
@@ -81,10 +110,10 @@ export function PortfolioSummary() {
         <div>
           <p className="text-sm mb-1" style={{ color: colors.textMuted }}>Total Returns</p>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-bold" style={{ color: colors.gain }}>
+            <p className="text-2xl font-bold" style={{ color: portfolio.returns >= 0 ? colors.gain : colors.loss }}>
               {formatCurrency(portfolio.returns)}
             </p>
-            <span className="text-sm" style={{ color: colors.gain }}>
+            <span className="text-sm" style={{ color: portfolio.returns >= 0 ? colors.gain : colors.loss }}>
               {formatPercent(portfolio.returnsPercent)}
             </span>
           </div>
