@@ -9,6 +9,7 @@ import {
   Filter,
   Plus,
 } from "lucide-react";
+import { useTrendingStocks, useSectorPerformance } from "@/lib/api/hooks";
 
 // Color constants
 const colors = {
@@ -28,41 +29,6 @@ const colors = {
   orange: "#F5A623",
 };
 
-// Mock trending stocks
-const trendingStocks = [
-  { symbol: "TATAMOTORS", name: "Tata Motors Ltd", price: 742.35, change: 1.15, volume: "12.5M" },
-  { symbol: "ZOMATO", name: "Zomato Ltd", price: 185.60, change: 7.10, volume: "45.2M" },
-  { symbol: "ADANIGREEN", name: "Adani Green Energy", price: 1245.80, change: -2.54, volume: "8.9M" },
-  { symbol: "IRFC", name: "Indian Railway Finance", price: 142.25, change: 4.25, volume: "32.1M" },
-];
-
-// Mock top gainers/losers
-const topGainers = [
-  { symbol: "ZOMATO", name: "Zomato Ltd", price: 185.60, change: 7.10 },
-  { symbol: "IRFC", name: "Indian Railway Finance", price: 142.25, change: 4.25 },
-  { symbol: "IDEA", name: "Vodafone Idea Ltd", price: 14.85, change: 3.92 },
-  { symbol: "YESBANK", name: "Yes Bank Ltd", price: 24.50, change: 3.15 },
-  { symbol: "SUZLON", name: "Suzlon Energy Ltd", price: 42.80, change: 2.85 },
-];
-
-const topLosers = [
-  { symbol: "ADANIGREEN", name: "Adani Green Energy", price: 1245.80, change: -2.54 },
-  { symbol: "ADANIENT", name: "Adani Enterprises", price: 2450.60, change: -1.85 },
-  { symbol: "PAYTM", name: "One97 Communications", price: 425.30, change: -1.62 },
-  { symbol: "NYKAA", name: "FSN E-Commerce", price: 165.40, change: -1.28 },
-  { symbol: "POLICYBZR", name: "PB Fintech Ltd", price: 892.15, change: -0.95 },
-];
-
-// Mock sectors
-const sectors = [
-  { name: "IT", change: 2.4, topStock: "TCS" },
-  { name: "Banking", change: -0.8, topStock: "HDFCBANK" },
-  { name: "Pharma", change: 1.2, topStock: "SUNPHARMA" },
-  { name: "Metals", change: 3.1, topStock: "TATASTEEL" },
-  { name: "Auto", change: 1.8, topStock: "TATAMOTORS" },
-  { name: "Energy", change: -1.5, topStock: "RELIANCE" },
-];
-
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -71,8 +37,64 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
+function LoadingSkeleton() {
+  return (
+    <div className="max-w-6xl space-y-6">
+      <div className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}>
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          <div className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          <div className="h-4 w-3/4 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}>
+            <div className="animate-pulse space-y-4">
+              <div className="h-5 w-24 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+              <div className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-6">
+        {[1, 2].map((i) => (
+          <div key={i} className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}>
+            <div className="animate-pulse space-y-4">
+              <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+              {[1, 2, 3, 4, 5].map((j) => (
+                <div key={j} className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DiscoverPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: trendingData, isLoading: trendingLoading } = useTrendingStocks(10);
+  const { data: sectorsData, isLoading: sectorsLoading } = useSectorPerformance();
+
+  const isLoading = trendingLoading || sectorsLoading;
+
+  // Split trending stocks into display sections
+  const trendingStocks = trendingData?.slice(0, 4) ?? [];
+  const topGainers = (trendingData ?? [])
+    .filter((s) => s.change_percent >= 0)
+    .sort((a, b) => b.change_percent - a.change_percent)
+    .slice(0, 5);
+  const topLosers = (trendingData ?? [])
+    .filter((s) => s.change_percent < 0)
+    .sort((a, b) => a.change_percent - b.change_percent)
+    .slice(0, 5);
+  const sectors = sectorsData ?? [];
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div className="max-w-6xl">
@@ -133,7 +155,7 @@ export default function DiscoverPage() {
         </div>
         <div className="grid grid-cols-4 gap-3">
           {trendingStocks.map((stock) => {
-            const isPositive = stock.change >= 0;
+            const isPositive = stock.change_percent >= 0;
             return (
               <div
                 key={stock.symbol}
@@ -171,7 +193,7 @@ export default function DiscoverPage() {
                     className="text-xs font-medium"
                     style={{ color: isPositive ? colors.gain : colors.loss }}
                   >
-                    {isPositive ? "+" : ""}{stock.change.toFixed(2)}%
+                    {isPositive ? "+" : ""}{stock.change_percent.toFixed(2)}%
                   </span>
                   <span className="text-xs" style={{ color: colors.textMuted }}>
                     Vol: {stock.volume}
@@ -226,7 +248,7 @@ export default function DiscoverPage() {
                     {formatCurrency(stock.price)}
                   </p>
                   <p className="text-xs font-medium" style={{ color: colors.gain }}>
-                    +{stock.change.toFixed(2)}%
+                    +{stock.change_percent.toFixed(2)}%
                   </p>
                 </div>
               </div>
@@ -275,7 +297,7 @@ export default function DiscoverPage() {
                     {formatCurrency(stock.price)}
                   </p>
                   <p className="text-xs font-medium" style={{ color: colors.loss }}>
-                    {stock.change.toFixed(2)}%
+                    {stock.change_percent.toFixed(2)}%
                   </p>
                 </div>
               </div>
@@ -296,7 +318,7 @@ export default function DiscoverPage() {
         </div>
         <div className="grid grid-cols-6">
           {sectors.map((sector, index) => {
-            const isPositive = sector.change >= 0;
+            const isPositive = sector.change_percent >= 0;
             return (
               <div
                 key={sector.name}
@@ -314,10 +336,10 @@ export default function DiscoverPage() {
                   className="text-lg font-semibold"
                   style={{ color: isPositive ? colors.gain : colors.loss }}
                 >
-                  {isPositive ? "+" : ""}{sector.change.toFixed(1)}%
+                  {isPositive ? "+" : ""}{sector.change_percent.toFixed(1)}%
                 </p>
                 <p className="text-xs mt-1" style={{ color: colors.textMuted }}>
-                  {sector.topStock}
+                  {sector.top_gainer}
                 </p>
               </div>
             );
