@@ -13,6 +13,7 @@ from app.api.v1.endpoints import (
     themes,
     watchlist,
     ai,
+    websocket,
 )
 
 api_router = APIRouter()
@@ -26,3 +27,4 @@ api_router.include_router(portfolio.router, prefix="/portfolio", tags=["Portfoli
 api_router.include_router(watchlist.router, prefix="/watchlist", tags=["Watchlist"])
 api_router.include_router(themes.router, prefix="/themes", tags=["Smart Themes"])
 api_router.include_router(ai.router, prefix="/ai", tags=["AI Services"])
+api_router.include_router(websocket.router, tags=["WebSocket"])
