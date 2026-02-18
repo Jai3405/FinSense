@@ -1,3 +1,4 @@
+// TODO: Wire to real API in Phase 2 (Intelligence Engine)
 "use client";
 
 import { useState } from "react";
