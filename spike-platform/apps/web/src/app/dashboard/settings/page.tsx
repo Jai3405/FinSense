@@ -11,7 +11,6 @@ import {
   HelpCircle,
   LogOut,
   ChevronRight,
-  Check,
   Moon,
   Sun,
   Smartphone,
@@ -22,8 +21,8 @@ import {
   Lock,
   Key,
   Building2,
-  ExternalLink,
 } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 // Color constants
 const colors = {
@@ -70,6 +69,15 @@ export default function SettingsPage() {
     promotions: false,
   });
 
+  const { user, isLoaded } = useUser();
+
+  const fullName = user ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() : "";
+  const email = user?.emailAddresses?.[0]?.emailAddress ?? "";
+  const initials = user
+    ? `${(user.firstName ?? "")[0] ?? ""}${(user.lastName ?? "")[0] ?? ""}`.toUpperCase()
+    : "";
+  const imageUrl = user?.imageUrl;
+
   const renderContent = () => {
     switch (activeTab) {
       case "profile":
@@ -83,71 +91,92 @@ export default function SettingsPage() {
                 className="rounded-xl p-6"
                 style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
               >
-                <div className="flex items-start gap-6">
-                  <div
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
-                    style={{ backgroundColor: colors.accent }}
-                  >
-                    JD
-                  </div>
-                  <div className="flex-1">
-                    <button className="text-sm font-medium" style={{ color: colors.accent }}>
-                      Change Photo
-                    </button>
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      <div>
-                        <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          defaultValue="Jay Desai"
-                          className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
-                          style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          defaultValue="jay@example.com"
-                          className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
-                          style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
-                          Phone
-                        </label>
-                        <input
-                          type="tel"
-                          defaultValue="+91 98765 43210"
-                          className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
-                          style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
-                          PAN Number
-                        </label>
-                        <input
-                          type="text"
-                          defaultValue="ABCDE1234F"
-                          className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
-                          style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
-                        />
+                {!isLoaded ? (
+                  <div className="animate-pulse space-y-4">
+                    <div className="flex items-start gap-6">
+                      <div className="w-20 h-20 rounded-2xl" style={{ backgroundColor: "#F5FFFC" }} />
+                      <div className="flex-1 space-y-4">
+                        <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+                        <div className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+                        <div className="h-4 w-3/4 rounded" style={{ backgroundColor: "#F5FFFC" }} />
                       </div>
                     </div>
-                    <button
-                      className="mt-4 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                      style={{ backgroundColor: colors.accent }}
-                    >
-                      Save Changes
-                    </button>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-start gap-6">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={fullName}
+                        className="w-20 h-20 rounded-2xl object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="w-20 h-20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
+                        style={{ backgroundColor: colors.accent }}
+                      >
+                        {initials || "U"}
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <button className="text-sm font-medium" style={{ color: colors.accent }}>
+                        Change Photo
+                      </button>
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                          <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue={fullName}
+                            className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
+                            style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            defaultValue={email}
+                            className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
+                            style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
+                            Phone
+                          </label>
+                          <input
+                            type="tel"
+                            defaultValue="+91 98765 43210"
+                            className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
+                            style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium" style={{ color: colors.textMuted }}>
+                            PAN Number
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue="ABCDE1234F"
+                            className="w-full mt-1 px-3 py-2 text-sm rounded-lg focus:outline-none"
+                            style={{ backgroundColor: colors.bgMint, border: `1px solid ${colors.border}`, color: colors.textPrimary }}
+                          />
+                        </div>
+                      </div>
+                      <button
+                        className="mt-4 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                        style={{ backgroundColor: colors.accent }}
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
