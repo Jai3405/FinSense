@@ -17,8 +17,8 @@ import {
   Bell,
   Share2,
   Download,
-  Clock,
 } from "lucide-react";
+import { useStockQuote, useStockSearch, useWatchlist } from "@/lib/api/hooks";
 
 // Color constants
 const colors = {
@@ -55,38 +55,42 @@ const indicators = [
   { name: "VWAP", description: "Volume Weighted Average Price", active: false },
 ];
 
-const watchlistStocks = [
-  { symbol: "RELIANCE", price: 2545.80, change: 0.8 },
-  { symbol: "TCS", price: 3892.50, change: -0.5 },
-  { symbol: "HDFCBANK", price: 1685.30, change: 1.2 },
-  { symbol: "INFY", price: 1565.25, change: 1.5 },
-  { symbol: "ICICIBANK", price: 1012.40, change: -0.3 },
-];
+function formatCompactVolume(vol: number): string {
+  if (vol >= 1_000_000) return `${(vol / 1_000_000).toFixed(1)}M`;
+  if (vol >= 1_000) return `${(vol / 1_000).toFixed(1)}K`;
+  return vol.toString();
+}
 
-const stockData = {
-  symbol: "RELIANCE",
-  name: "Reliance Industries Ltd",
-  price: 2545.80,
-  change: 20.45,
-  changePercent: 0.81,
-  open: 2530.00,
-  high: 2558.90,
-  low: 2525.15,
-  prevClose: 2525.35,
-  volume: "12.5M",
-  avgVolume: "10.2M",
-  marketCap: "₹17.2L Cr",
-  pe: 24.8,
-  weekHigh52: 2856.15,
-  weekLow52: 2180.00,
-};
+function LoadingSkeleton() {
+  return (
+    <div className="h-[calc(100vh-8rem)]">
+      <div className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}>
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          <div className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          <div className="h-4 w-3/4 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ChartsPage() {
+  const [selectedSymbol, setSelectedSymbol] = useState("RELIANCE");
   const [selectedTimeframe, setSelectedTimeframe] = useState("1D");
   const [selectedChartType, setSelectedChartType] = useState(0);
   const [showIndicators, setShowIndicators] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const isPositive = stockData.changePercent >= 0;
+  const { data: stockData, isLoading: quoteLoading } = useStockQuote(selectedSymbol);
+  const { data: watchlistStocks, isLoading: watchlistLoading } = useWatchlist();
+  const { data: searchResults } = useStockSearch(searchQuery);
+
+  if (quoteLoading && !stockData) {
+    return <LoadingSkeleton />;
+  }
+
+  const isPositive = (stockData?.change_percent ?? 0) >= 0;
 
   return (
     <div className="h-[calc(100vh-8rem)]">
@@ -102,36 +106,80 @@ export default function ChartsPage() {
               <input
                 type="text"
                 placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-7 pr-2 py-1.5 text-xs rounded-lg focus:outline-none"
                 style={{ backgroundColor: colors.bgMint, color: colors.textPrimary }}
               />
             </div>
+            {/* Search results dropdown */}
+            {searchResults && searchResults.length > 0 && searchQuery.length >= 2 && (
+              <div
+                className="mt-1 rounded-lg overflow-hidden"
+                style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+              >
+                {searchResults.slice(0, 5).map((result) => (
+                  <div
+                    key={result.symbol}
+                    className="px-2 py-1.5 cursor-pointer transition-colors text-xs"
+                    style={{ borderBottom: `1px solid ${colors.border}` }}
+                    onClick={() => {
+                      setSelectedSymbol(result.symbol);
+                      setSearchQuery("");
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    <span className="font-medium" style={{ color: colors.textPrimary }}>{result.symbol}</span>
+                    <span className="ml-1" style={{ color: colors.textMuted }}>{result.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex-1 overflow-auto">
-            {watchlistStocks.map((stock) => (
-              <div
-                key={stock.symbol}
-                className="px-3 py-2.5 cursor-pointer transition-colors"
-                style={{ borderBottom: `1px solid ${colors.border}` }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.bgHover)}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium" style={{ color: colors.textPrimary }}>
-                    {stock.symbol}
-                  </span>
-                  <span
-                    className="text-xs font-medium"
-                    style={{ color: stock.change >= 0 ? colors.gain : colors.loss }}
-                  >
-                    {stock.change >= 0 ? "+" : ""}{stock.change.toFixed(2)}%
+            {watchlistLoading ? (
+              <div className="p-3">
+                <div className="animate-pulse space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="h-8 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              (watchlistStocks ?? []).map((stock) => (
+                <div
+                  key={stock.symbol}
+                  className="px-3 py-2.5 cursor-pointer transition-colors"
+                  style={{
+                    borderBottom: `1px solid ${colors.border}`,
+                    backgroundColor: stock.symbol === selectedSymbol ? colors.bgMint : "transparent",
+                  }}
+                  onClick={() => setSelectedSymbol(stock.symbol)}
+                  onMouseEnter={(e) => {
+                    if (stock.symbol !== selectedSymbol) e.currentTarget.style.backgroundColor = colors.bgHover;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (stock.symbol !== selectedSymbol) e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium" style={{ color: colors.textPrimary }}>
+                      {stock.symbol}
+                    </span>
+                    <span
+                      className="text-xs font-medium"
+                      style={{ color: stock.change_percent >= 0 ? colors.gain : colors.loss }}
+                    >
+                      {stock.change_percent >= 0 ? "+" : ""}{stock.change_percent.toFixed(2)}%
+                    </span>
+                  </div>
+                  <span className="text-xs" style={{ color: colors.textMuted }}>
+                    {"\u20B9"}{stock.price.toLocaleString("en-IN")}
                   </span>
                 </div>
-                <span className="text-xs" style={{ color: colors.textMuted }}>
-                  ₹{stock.price.toLocaleString("en-IN")}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -147,15 +195,15 @@ export default function ChartsPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-lg font-semibold" style={{ color: colors.textPrimary }}>
-                      {stockData.symbol}
+                      {stockData?.symbol ?? selectedSymbol}
                     </h1>
                     <span className="text-sm" style={{ color: colors.textMuted }}>
-                      {stockData.name}
+                      {stockData?.name ?? ""}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-2xl font-bold" style={{ color: colors.textPrimary }}>
-                      ₹{stockData.price.toLocaleString("en-IN")}
+                      {"\u20B9"}{stockData?.price?.toLocaleString("en-IN") ?? "..."}
                     </span>
                     <div className="flex items-center gap-1">
                       {isPositive ? (
@@ -167,7 +215,7 @@ export default function ChartsPage() {
                         className="text-sm font-medium"
                         style={{ color: isPositive ? colors.gain : colors.loss }}
                       >
-                        {isPositive ? "+" : ""}₹{stockData.change.toFixed(2)} ({isPositive ? "+" : ""}{stockData.changePercent.toFixed(2)}%)
+                        {isPositive ? "+" : ""}{"\u20B9"}{stockData?.change?.toFixed(2) ?? "0.00"} ({isPositive ? "+" : ""}{stockData?.change_percent?.toFixed(2) ?? "0.00"}%)
                       </span>
                     </div>
                   </div>
@@ -308,23 +356,26 @@ export default function ChartsPage() {
             </h3>
           </div>
           <div className="flex-1 overflow-auto p-3 space-y-3">
-            {[
-              { label: "Open", value: `₹${stockData.open.toLocaleString()}` },
-              { label: "High", value: `₹${stockData.high.toLocaleString()}` },
-              { label: "Low", value: `₹${stockData.low.toLocaleString()}` },
-              { label: "Prev Close", value: `₹${stockData.prevClose.toLocaleString()}` },
-              { label: "Volume", value: stockData.volume },
-              { label: "Avg Volume", value: stockData.avgVolume },
-              { label: "Market Cap", value: stockData.marketCap },
-              { label: "P/E", value: stockData.pe.toString() },
-              { label: "52W High", value: `₹${stockData.weekHigh52.toLocaleString()}` },
-              { label: "52W Low", value: `₹${stockData.weekLow52.toLocaleString()}` },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between">
-                <span className="text-xs" style={{ color: colors.textMuted }}>{item.label}</span>
-                <span className="text-xs font-medium" style={{ color: colors.textPrimary }}>{item.value}</span>
+            {stockData ? (
+              [
+                { label: "Open", value: `\u20B9${stockData.open?.toLocaleString() ?? "-"}` },
+                { label: "High", value: `\u20B9${stockData.high?.toLocaleString() ?? "-"}` },
+                { label: "Low", value: `\u20B9${stockData.low?.toLocaleString() ?? "-"}` },
+                { label: "Prev Close", value: `\u20B9${stockData.prev_close?.toLocaleString() ?? "-"}` },
+                { label: "Volume", value: formatCompactVolume(stockData.volume ?? 0) },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between">
+                  <span className="text-xs" style={{ color: colors.textMuted }}>{item.label}</span>
+                  <span className="text-xs font-medium" style={{ color: colors.textPrimary }}>{item.value}</span>
+                </div>
+              ))
+            ) : (
+              <div className="animate-pulse space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-4 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+                ))}
               </div>
-            ))}
+            )}
           </div>
 
           {/* Indicators Panel */}
