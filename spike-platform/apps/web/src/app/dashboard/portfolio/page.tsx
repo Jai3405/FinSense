@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { TrendingUp, TrendingDown, ChevronDown } from "lucide-react";
+import { usePortfolioSummary, useHoldings } from "@/lib/api/hooks";
 
 // Color constants
 const colors = {
@@ -19,27 +20,6 @@ const colors = {
   lossBg: "#FEF0F1",
 };
 
-// Mock portfolio data
-const portfolioSummary = {
-  totalValue: 1247850.75,
-  investedValue: 1050000,
-  dayChange: 12450.25,
-  dayChangePercent: 1.01,
-  totalReturns: 197850.75,
-  totalReturnsPercent: 18.84,
-};
-
-const holdings = [
-  { symbol: "HDFCBANK", name: "HDFC Bank Ltd", qty: 50, avgPrice: 1520.45, currentPrice: 1685.30, dayChange: 1.2 },
-  { symbol: "TCS", name: "Tata Consultancy Services", qty: 25, avgPrice: 3450.00, currentPrice: 3892.50, dayChange: -0.5 },
-  { symbol: "RELIANCE", name: "Reliance Industries", qty: 40, avgPrice: 2380.25, currentPrice: 2545.80, dayChange: 0.8 },
-  { symbol: "INFY", name: "Infosys Ltd", qty: 60, avgPrice: 1420.00, currentPrice: 1565.25, dayChange: 1.5 },
-  { symbol: "ICICIBANK", name: "ICICI Bank Ltd", qty: 80, avgPrice: 925.50, currentPrice: 1012.40, dayChange: -0.3 },
-  { symbol: "TATAMOTORS", name: "Tata Motors Ltd", qty: 100, avgPrice: 625.00, currentPrice: 742.35, dayChange: 2.1 },
-  { symbol: "SUNPHARMA", name: "Sun Pharma Industries", qty: 45, avgPrice: 1180.00, currentPrice: 1245.60, dayChange: 0.4 },
-  { symbol: "BHARTIARTL", name: "Bharti Airtel Ltd", qty: 35, avgPrice: 1050.00, currentPrice: 1185.90, dayChange: -0.2 },
-];
-
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -52,15 +32,72 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 }).format(value);
 }
 
+function LoadingSkeleton() {
+  return (
+    <div className="max-w-6xl space-y-6">
+      <div className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}>
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          <div className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          <div className="h-4 w-3/4 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}>
+            <div className="animate-pulse space-y-4">
+              <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+              <div className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid #B8DDD7" }}>
+        <div className="animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-4 w-full rounded" style={{ backgroundColor: "#F5FFFC" }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PortfolioPage() {
   const [sortBy, setSortBy] = useState<string>("value");
-  const isPositiveDay = portfolioSummary.dayChangePercent >= 0;
-  const isPositiveTotal = portfolioSummary.totalReturnsPercent >= 0;
+  const { data: portfolioSummary, isLoading: summaryLoading } = usePortfolioSummary();
+  const { data: holdings, isLoading: holdingsLoading } = useHoldings();
+
+  const isLoading = summaryLoading || holdingsLoading;
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (!portfolioSummary || !holdings || holdings.length === 0) {
+    return (
+      <div className="max-w-6xl">
+        <div
+          className="rounded-xl p-12 text-center"
+          style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}` }}
+        >
+          <p className="text-lg font-semibold mb-2" style={{ color: colors.textPrimary }}>
+            No holdings yet
+          </p>
+          <p className="text-sm" style={{ color: colors.textMuted }}>
+            Add stocks to your portfolio to see them here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const isPositiveDay = portfolioSummary.today_change_percent >= 0;
+  const isPositiveTotal = portfolioSummary.returns_percent >= 0;
 
   const sortedHoldings = [...holdings].sort((a, b) => {
-    const aValue = a.qty * a.currentPrice;
-    const bValue = b.qty * b.currentPrice;
-    return bValue - aValue;
+    return b.current_value - a.current_value;
   });
 
   return (
@@ -69,7 +106,7 @@ export default function PortfolioPage() {
       <div className="mb-6">
         <div className="flex items-baseline gap-3 mb-1">
           <h1 className="text-2xl font-semibold" style={{ color: colors.textPrimary }}>
-            {formatCurrency(portfolioSummary.totalValue)}
+            {formatCurrency(portfolioSummary.total_value)}
           </h1>
           <div className="flex items-center gap-1">
             {isPositiveDay ? (
@@ -82,12 +119,12 @@ export default function PortfolioPage() {
               style={{ color: isPositiveDay ? colors.gain : colors.loss }}
             >
               {isPositiveDay ? "+" : ""}
-              {formatCurrency(portfolioSummary.dayChange)} ({portfolioSummary.dayChangePercent.toFixed(2)}%)
+              {formatCurrency(portfolioSummary.today_change)} ({portfolioSummary.today_change_percent.toFixed(2)}%)
             </span>
           </div>
         </div>
         <p className="text-sm" style={{ color: colors.textMuted }}>
-          Invested {formatCurrency(portfolioSummary.investedValue)}
+          Invested {formatCurrency(portfolioSummary.invested)}
         </p>
       </div>
 
@@ -101,7 +138,7 @@ export default function PortfolioPage() {
             Current Value
           </p>
           <p className="text-lg font-semibold" style={{ color: colors.textPrimary }}>
-            {formatCurrency(portfolioSummary.totalValue)}
+            {formatCurrency(portfolioSummary.total_value)}
           </p>
         </div>
         <div
@@ -112,7 +149,7 @@ export default function PortfolioPage() {
             Invested
           </p>
           <p className="text-lg font-semibold" style={{ color: colors.textPrimary }}>
-            {formatCurrency(portfolioSummary.investedValue)}
+            {formatCurrency(portfolioSummary.invested)}
           </p>
         </div>
         <div
@@ -126,9 +163,9 @@ export default function PortfolioPage() {
             Total Returns
           </p>
           <p className="text-lg font-semibold" style={{ color: isPositiveTotal ? colors.gain : colors.loss }}>
-            {isPositiveTotal ? "+" : ""}{formatCurrency(portfolioSummary.totalReturns)}
+            {isPositiveTotal ? "+" : ""}{formatCurrency(portfolioSummary.returns)}
             <span className="text-sm font-normal ml-1">
-              ({isPositiveTotal ? "+" : ""}{portfolioSummary.totalReturnsPercent.toFixed(2)}%)
+              ({isPositiveTotal ? "+" : ""}{portfolioSummary.returns_percent.toFixed(2)}%)
             </span>
           </p>
         </div>
@@ -203,18 +240,13 @@ export default function PortfolioPage() {
                   className="text-right text-xs font-medium uppercase tracking-wide px-4 py-3"
                   style={{ color: colors.textMuted }}
                 >
-                  Day Change
+                  Returns %
                 </th>
               </tr>
             </thead>
             <tbody>
-              {sortedHoldings.map((holding, index) => {
-                const currentValue = holding.qty * holding.currentPrice;
-                const investedValue = holding.qty * holding.avgPrice;
-                const pnl = currentValue - investedValue;
-                const pnlPercent = ((currentValue - investedValue) / investedValue) * 100;
-                const isPositive = pnl >= 0;
-                const isDayPositive = holding.dayChange >= 0;
+              {sortedHoldings.map((holding) => {
+                const isPositive = holding.returns >= 0;
 
                 return (
                   <tr
@@ -235,16 +267,16 @@ export default function PortfolioPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right text-sm" style={{ color: colors.textPrimary }}>
-                      {holding.qty}
+                      {holding.quantity}
                     </td>
                     <td className="px-4 py-3 text-right text-sm" style={{ color: colors.textSecondary }}>
-                      {formatNumber(holding.avgPrice)}
+                      {formatNumber(holding.avg_price)}
                     </td>
                     <td className="px-4 py-3 text-right text-sm font-medium" style={{ color: colors.textPrimary }}>
-                      {formatNumber(holding.currentPrice)}
+                      {formatNumber(holding.current_price)}
                     </td>
                     <td className="px-4 py-3 text-right text-sm font-medium" style={{ color: colors.textPrimary }}>
-                      {formatCurrency(currentValue)}
+                      {formatCurrency(holding.current_value)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div>
@@ -252,19 +284,16 @@ export default function PortfolioPage() {
                           className="text-sm font-medium"
                           style={{ color: isPositive ? colors.gain : colors.loss }}
                         >
-                          {isPositive ? "+" : ""}{formatCurrency(pnl)}
-                        </p>
-                        <p className="text-xs" style={{ color: isPositive ? colors.gain : colors.loss }}>
-                          {isPositive ? "+" : ""}{pnlPercent.toFixed(2)}%
+                          {isPositive ? "+" : ""}{formatCurrency(holding.returns)}
                         </p>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span
                         className="text-sm font-medium"
-                        style={{ color: isDayPositive ? colors.gain : colors.loss }}
+                        style={{ color: isPositive ? colors.gain : colors.loss }}
                       >
-                        {isDayPositive ? "+" : ""}{holding.dayChange.toFixed(2)}%
+                        {isPositive ? "+" : ""}{holding.returns_percent.toFixed(2)}%
                       </span>
                     </td>
                   </tr>
